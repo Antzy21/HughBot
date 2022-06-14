@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "HughBot", "HughBot\HughBot.fsproj", "{BF814810-B6D6-4EF6-959E-4196A45D9C2C}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ChessModule", "..\FunctionalChess\ChessModule.fsproj", "{0D5B07B2-0E3B-4290-AA56-776E1EDA585E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF814810-B6D6-4EF6-959E-4196A45D9C2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF814810-B6D6-4EF6-959E-4196A45D9C2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF814810-B6D6-4EF6-959E-4196A45D9C2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF814810-B6D6-4EF6-959E-4196A45D9C2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D5B07B2-0E3B-4290-AA56-776E1EDA585E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D5B07B2-0E3B-4290-AA56-776E1EDA585E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D5B07B2-0E3B-4290-AA56-776E1EDA585E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D5B07B2-0E3B-4290-AA56-776E1EDA585E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {44588A4C-CD78-4666-B756-31EE608281ED}
+	EndGlobalSection
+EndGlobal
