@@ -54,10 +54,13 @@ let private staticValueOfSquareOnBoard (board: board) (square: square) : float o
             |> (*) value 
         )
 
-let staticValueOfGameState (game: gameState) : float =
+let staticEvaluationOfGameState (game: gameState) : float =
     game.board
     |> Array2D.fold (fun boardValue square ->
         match staticValueOfSquareOnBoard game.board square with
         | None -> boardValue
         | Some value -> boardValue + value
     ) 0
+
+let printEvalutation (game: gameState) =
+    printfn $"\nStatic heuristics evaluation: {staticEvaluationOfGameState game}"
