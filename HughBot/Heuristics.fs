@@ -27,12 +27,13 @@ let private pieceFlexibilityValue (board: board) (square: square) : float =
 let private pawnAdvanceValue (square: square) : float =
     let piece = Square.getPiece square
     let (i,j) = square.coordinates
+    let centralityBonus = 3.5-(abs((float i) - 3.5))
     match piece.colour with
     | White -> 
         (float j) - 1.
     | Black ->
         6. - (float j)
-
+    |> (*) (1. + centralityBonus*0.1)
 let private staticValueOfSquareOnBoard (board: board) (square: square) : float option =
     match square.piece with
     | None -> None
@@ -40,11 +41,11 @@ let private staticValueOfSquareOnBoard (board: board) (square: square) : float o
         let baseValue = getBaseValue square
         let flexValue =
             match piece.pieceType with
-            | Knight -> knightCentralityValue square |> (*) 0.02  |> Some
-            | Bishop -> pieceFlexibilityValue board square |> (*) 0.02 |> Some
-            | Queen -> pieceFlexibilityValue board square |> (*) 0.01 |> Some
-            | Rook -> pieceFlexibilityValue board square |> (*) 0.02 |> Some
-            | Pawn -> pawnAdvanceValue square |> (*) 0.05 |> Some
+            | Knight -> knightCentralityValue square |> (*) 0.01  |> Some
+            | Bishop -> pieceFlexibilityValue board square |> (*) 0.002 |> Some
+            | Queen -> pieceFlexibilityValue board square |> (*) 0.0001 |> Some
+            | Rook -> pieceFlexibilityValue board square |> (*) 0.002 |> Some
+            | Pawn -> pawnAdvanceValue square |> (*) 0.02 |> Some
             | King -> None
         Option.map2 (+) baseValue flexValue
         |> Option.map (fun value ->
@@ -63,4 +64,4 @@ let staticEvaluationOfGameState (game: gameState) : float =
     ) 0
 
 let printEvalutation (game: gameState) =
-    printfn "\nStatic heuristics evaluation: %.3f" (staticEvaluationOfGameState game)
+    printfn "Static heuristics evaluation: %.3f" (staticEvaluationOfGameState game)
