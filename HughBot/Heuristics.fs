@@ -1,5 +1,6 @@
 ﻿module Heuristics
 
+open System
 open Chess
 open Checkerboard
 open FSharp.Extensions
@@ -33,7 +34,7 @@ let private pawnAdvanceValue (square: square) : float =
         (float j) - 1.
     | Black ->
         6. - (float j)
-    |> (*) (1. + centralityBonus*0.1)
+    |> (*) (1. + centralityBonus*0.2)
 let private staticValueOfSquareOnBoard (board: board) (square: square) : float option =
     match square.piece with
     | None -> None
@@ -45,7 +46,7 @@ let private staticValueOfSquareOnBoard (board: board) (square: square) : float o
             | Bishop -> pieceFlexibilityValue board square |> (*) 0.002 |> Some
             | Queen -> pieceFlexibilityValue board square |> (*) 0.0001 |> Some
             | Rook -> pieceFlexibilityValue board square |> (*) 0.002 |> Some
-            | Pawn -> pawnAdvanceValue square |> (*) 0.02 |> Some
+            | Pawn -> pawnAdvanceValue square |> (*) 0.01 |> Some
             | King -> None
         Option.map2 (+) baseValue flexValue
         |> Option.map (fun value ->
@@ -55,13 +56,22 @@ let private staticValueOfSquareOnBoard (board: board) (square: square) : float o
             |> (*) value 
         )
 
+let private isCheckMate (game: gameState) : bool =
+    GameState.getMovesForPlayer game = List.empty
+    && (Board.isInCheck game.playerTurn game.board)
+
 let staticEvaluationOfGameState (game: gameState) : float =
-    game.board
-    |> Array2D.fold (fun boardValue square ->
-        match staticValueOfSquareOnBoard game.board square with
-        | None -> boardValue
-        | Some value -> boardValue + value
-    ) 0
+    if isCheckMate game then
+        match game.playerTurn with
+        | White -> -1000
+        | Black -> 1000
+    else
+        game.board
+        |> Array2D.fold (fun boardValue square ->
+            match staticValueOfSquareOnBoard game.board square with
+            | None -> boardValue
+            | Some value -> boardValue + value
+        ) 0
 
 let printEvalutation (game: gameState) =
     printfn "Static heuristics evaluation: %.3f" (staticEvaluationOfGameState game)
