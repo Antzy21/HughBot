@@ -63,4 +63,4 @@ let staticEvaluationOfGameState (game: gameState) : float =
     ) 0
 
 let printEvalutation (game: gameState) =
-    printfn $"\nStatic heuristics evaluation: {staticEvaluationOfGameState game}"
+    printfn "\nStatic heuristics evaluation: %.3f" (staticEvaluationOfGameState game)
