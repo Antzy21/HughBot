@@ -56,15 +56,18 @@ let private staticValueOfSquareOnBoard (board: board) (square: square) : float o
             |> (*) value 
         )
 
-let private isCheckMate (game: gameState) : bool =
-    GameState.getMovesForPlayer game = List.empty
-    && (Board.isInCheck game.playerTurn game.board)
+let gameOverEvaluation (turnsUntillGameOver: int) (game: gameState) : float =
+    if Board.isInCheck game.playerTurn game.board then
+        match game.playerTurn with
+        | White -> -1000 + turnsUntillGameOver
+        | Black -> 1000 - turnsUntillGameOver
+    else
+        0
+    |> float
 
 let staticEvaluationOfGameState (game: gameState) : float =
-    if isCheckMate game then
-        match game.playerTurn with
-        | White -> -1000
-        | Black -> 1000
+    if GameState.getMovesForPlayer game = List.empty then
+        gameOverEvaluation 0 game
     else
         game.board
         |> Array2D.fold (fun boardValue square ->
