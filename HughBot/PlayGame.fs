@@ -3,12 +3,11 @@
 open FSharp.Extensions
 open Chess
 
-let newGame () =
     
+let play (gs: gameState) =
+    
+    let mutable game = gs
     printfn "I'm HughBot, a chess engine. Let's play!"
-
-    let mutable game = GameState.newGame () 
-
     let botColour = Console.ParseLine "Please select White or Black for bot to play" Colour.tryParse 
 
     let mutable moveList : string list = []
@@ -39,3 +38,11 @@ let newGame () =
     List.iter (printfn "%s") moveList
 
     printfn "Good game!"
+
+let newGame () =
+    GameState.newGame () 
+    |> play
+
+let playFromFen (fen : string) =
+    GameState.fromFen fen
+    |> play
