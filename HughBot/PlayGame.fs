@@ -2,13 +2,22 @@
 
 open FSharp.Extensions
 open Chess
+open System.IO
 
     
 let play (gs: gameState) =
     
     let mutable game = gs
     printfn "I'm HughBot, a chess engine. Let's play!"
+    printfn "Who am I playing against?"
+    let opponent = System.Console.ReadLine ()
     let botColour = Console.ParseLine "Please select White or Black for bot to play" Colour.tryParse 
+    
+    let date = System.DateTime.Now.ToString("DDMMYYYY")
+    let fileName = $"Hughbot({botColour |> Colour.toChar})vs({botColour |> Colour.opposite |> Colour.toChar}){opponent}_{date}.log"
+    let path = $"../../../RecordedGames/{fileName}"
+    let file = File.CreateText(path)
+    file.Write($"Test")
 
     let mutable moveList : string list = []
 
@@ -16,7 +25,14 @@ let play (gs: gameState) =
         let currentMove =
             if game.playerTurn = botColour then
                 printfn "Calculating move..."
-                let move, _ = MinMax.evaluation 5 game
+                let move, _ =
+                    try
+                        MinMax.evaluation 5 game
+                    with
+                    | ex ->
+                        file.WriteLine($"{ex}")
+                        file.Close()
+                        failwith $"{ex}"
                 move |> Option.get
             else
                 let moves = GameState.getMovesForPlayer game
@@ -30,10 +46,14 @@ let play (gs: gameState) =
                             Some moves[i]
                     )
                 )
+        file.WriteLine($"{Move.getMoveNotation currentMove}")
         moveList <- List.append moveList [Move.getMoveNotation currentMove]
         game <- GameState.makeMove currentMove game
         GameState.print game
         GameState.toFen game |> printfn "%s"
+    
+    file.WriteLine(GameState.toFen game)
+    file.Close()
 
     List.iter (printfn "%s") moveList
 
