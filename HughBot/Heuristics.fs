@@ -22,7 +22,7 @@ let private knightCentralityValue (square: square) : float =
     else 0.
     
 let private pieceFlexibilityValue (board: board) (square: square) : float =
-    Square.getMoves board square
+    Board.GetSquares.possibleToMoveToForPieceOnSquare board square
     |> List.length |> float
 
 let private pawnAdvanceValue (square: square) : float =
