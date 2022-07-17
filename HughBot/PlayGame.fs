@@ -4,7 +4,23 @@ open FSharp.Extensions
 open Chess
 open System.IO
 
+let getMoveFromNotation (game: gameState) (moves: move list) : move option =
+    Console.ParseLineWithBreakOption "Please enter move" (fun (notation: string) ->
+        NotationParser.tryParse game.playerTurn game.board notation
+    )
     
+let getMoveFromList (moves: move list) =
+    moves |> List.iteri (fun i m -> printfn $"({i}) {Move.getMoveNotation m}")
+    Console.ParseLine "Please enter a valid move #" (fun (v: string) ->
+        Int.tryParse v
+        |> Option.bind (fun i ->
+            if i < 0 || i > moves.Length then
+                None
+            else
+                Some moves[i]
+        )
+    )
+
 let play (gs: gameState) =
     
     let mutable game = gs
@@ -17,7 +33,6 @@ let play (gs: gameState) =
     let fileName = $"Hughbot({botColour |> Colour.toChar})vs({botColour |> Colour.opposite |> Colour.toChar}){opponent}_{date}.log"
     let path = $"../../../RecordedGames/{fileName}"
     let file = File.CreateText(path)
-    file.Write($"Test")
 
     let mutable moveList : string list = []
 
@@ -32,20 +47,12 @@ let play (gs: gameState) =
                     | ex ->
                         file.WriteLine($"{ex}")
                         file.Close()
-                        failwith $"{ex}"
+                        failwith $"{ex}" 
                 move |> Option.get
             else
                 let moves = GameState.getMovesForPlayer game
-                moves |> List.iteri (fun i m -> printfn $"({i}) {Move.getMoveNotation m}")
-                Console.ParseLine "Please enter a valid move #" (fun (v: string) ->
-                    Int.tryParse v
-                    |> Option.bind (fun i ->
-                        if i < 0 || i > moves.Length then
-                            None
-                        else
-                            Some moves[i]
-                    )
-                )
+                getMoveFromNotation game moves
+                |> Option.defaultWith (fun () -> getMoveFromList moves)
         file.WriteLine($"{Move.getMoveNotation currentMove}")
         moveList <- List.append moveList [Move.getMoveNotation currentMove]
         game <- GameState.makeMove currentMove game
