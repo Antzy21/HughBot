@@ -29,7 +29,7 @@ let play (gs: gameState) =
     let opponent = System.Console.ReadLine ()
     let botColour = Console.ParseLine "Please select White or Black for bot to play" Colour.tryParse 
     
-    let date = System.DateTime.Now.ToString("DDMMYYYY")
+    let date = System.DateTime.Now.ToString("ddMMyyyy")
     let fileName = $"Hughbot({botColour |> Colour.toChar})vs({botColour |> Colour.opposite |> Colour.toChar}){opponent}_{date}.log"
     let path = $"../../../RecordedGames/{fileName}"
     let file = File.CreateText(path)
@@ -46,6 +46,7 @@ let play (gs: gameState) =
                     with
                     | ex ->
                         file.WriteLine($"{ex}")
+                        file.WriteLine($"{GameState.toFen game}")
                         file.Close()
                         failwith $"{ex}" 
                 move |> Option.get
