@@ -52,7 +52,7 @@ let rec private minMaxEvaluation (maxDepth: int) (depth: int) (shallowTrim: int)
             let move, eval = bestMoveAndEval
             Option.iter ( 
                 Move.getMoveNotation
-                >> printfn "Turn: %s - Eval : %.2f - Move: %s" (game.playerTurn.ToString()) eval
+                >> printfn "%s Turn: %s - Eval : %.2f - Move: %s" (String.replicate depth " ") (game.playerTurn.ToString()) eval
             ) move
 
         bestMoveAndEval
