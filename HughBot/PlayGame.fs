@@ -42,7 +42,7 @@ let play (gs: gameState) =
                 printfn "Calculating move..."
                 let move, _ =
                     try
-                        MinMax.evaluation 5 game
+                        MinMax.evaluation game
                     with
                     | ex ->
                         file.WriteLine($"{ex}")
