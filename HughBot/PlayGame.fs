@@ -45,6 +45,7 @@ let play (gs: gameState) =
                         MinMax.evaluation game
                     with
                     | ex ->
+                        GameState.print game
                         file.WriteLine($"{ex}")
                         file.WriteLine($"{GameState.toFen game}")
                         file.Close()
