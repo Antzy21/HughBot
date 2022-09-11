@@ -66,7 +66,7 @@ let gameOverEvaluation (turnsUntillGameOver: int) (game: gameState) : float =
     |> float
 
 let staticEvaluationOfGameState (game: gameState) : float =
-    if GameState.getMovesForPlayer game = List.empty then
+    if GameState.getMoves game = List.empty then
         gameOverEvaluation 0 game
     else
         game.board

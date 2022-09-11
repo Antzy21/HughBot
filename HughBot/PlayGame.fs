@@ -52,26 +52,27 @@ let play (gs: gameState) =
                         failwith $"{ex}" 
                 move |> Option.get
             else
-                let moves = GameState.getMovesForPlayer game
+                let moves = GameState.getMoves game
                 getMoveFromNotation game moves
                 |> Option.defaultWith (fun () -> getMoveFromList moves)
         file.WriteLine($"{Move.getMoveNotation currentMove}")
         moveList <- List.append moveList [Move.getMoveNotation currentMove]
-        game <- GameState.makeMove currentMove game
+        game <- GameState.Update.makeMove currentMove game
         GameState.print game
         GameState.toFen game |> printfn "%s"
     
     file.WriteLine(GameState.toFen game)
     file.Close()
 
+    printfn("/n/n========/n Game Moves/n========")
     List.iter (printfn "%s") moveList
 
-    printfn "Good game!"
+    printfn "/nGood game!"
 
 let newGame () =
-    GameState.newGame () 
+    GameState.Create.newGame () 
     |> play
 
 let playFromFen (fen : string) =
-    GameState.fromFen fen
+    GameState.Create.fromFen fen
     |> play

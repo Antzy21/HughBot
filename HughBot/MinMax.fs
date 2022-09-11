@@ -7,21 +7,21 @@ type minMaxConfig = {maxDepth: int; shallowTrim: int; deepTrim: int; deepTrimDep
 let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: gameState) : move option * float =
     if depth = config.maxDepth then
         None, Heuristics.staticEvaluationOfGameState game
-    else if GameState.getMovesForPlayer game = List.empty then
+    else if GameState.getMoves game = List.empty then
         None, Heuristics.gameOverEvaluation depth game
     else
-        let ms = GameState.getMovesForPlayer game
+        let ms = GameState.getMoves game
 
-        let newGameStates = 
+        let newGsStaticEvals = 
             List.map (fun move ->
-                (GameState.makeMove move game, move)
+                let newGs = GameState.Update.makeMove move game
+                let eval = Heuristics.staticEvaluationOfGameState game
+                GameState.Update.undoMove move game |> ignore
+                eval, move
             ) ms
 
-        let newGsStaticEval = 
-            newGameStates
-            |> List.map (fun (game, move) ->
-                (Heuristics.staticEvaluationOfGameState game, move)
-            ) |>
+        let orderedEvals = 
+            newGsStaticEvals |>
             match game.playerTurn with
             | White -> List.sortByDescending fst
             | Black -> List.sortBy fst
@@ -30,7 +30,7 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
             if depth >= config.deepTrimDepth then config.deepTrim
             else config.shallowTrim
 
-        let newGsStaticEval = List.take (min newGsStaticEval.Length trim) newGsStaticEval
+        let newGsStaticEval = List.take (min orderedEvals.Length trim) orderedEvals
 
         let movesAndEvals =
             newGsStaticEval
@@ -40,9 +40,10 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
                     (String.replicate depth "  ") (game.fullMoveClock)
                     (game.playerTurn.ToString()) staticEvaluation
                 let evaluation = 
-                    GameState.makeMove move game
+                    GameState.Update.makeMove move game
                     |> minMaxEvaluation config (depth + 1)
                     |> snd
+                GameState.Update.undoMove move game |> ignore
                 (Some move, evaluation)
             )
 
@@ -58,7 +59,7 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
 
 let evaluation (game: gameState) : move option * float =
     let stopWatch = System.Diagnostics.Stopwatch.StartNew()
-    let config = {maxDepth = 3; shallowTrim = 2; deepTrim = 2; deepTrimDepth = 0}
+    let config = {maxDepth = 4; shallowTrim = 6; deepTrim = 2; deepTrimDepth = 2}
     let move, eval = minMaxEvaluation config 0 game
     Option.iter (
         Move.getMoveNotation >> printfn "\n\nEval : %.2f - Move: %s" eval
