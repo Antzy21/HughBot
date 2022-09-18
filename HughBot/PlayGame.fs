@@ -25,7 +25,7 @@ let play (gs: gameState) =
     
     let mutable game = gs
     printfn "I'm HughBot, a chess engine. Let's play!"
-    printfn "Who am I playing against?"
+    printfn "Who am I playing against? (Leave blank to test - No log will be created)"
     let opponent = System.Console.ReadLine ()
     let botColour = Console.ParseLine "Please select White or Black for bot to play" Colour.tryParse 
     
@@ -68,6 +68,9 @@ let play (gs: gameState) =
     List.iter (printfn "%s") moveList
 
     printfn "\nGood game!"
+
+    if opponent = "" then
+        File.Delete path
 
 let newGame () =
     GameState.Create.newGame () 
