@@ -10,16 +10,6 @@ let private getBaseValue (square: square) : float option =
     |> Square.getPiece
     |> Piece.getValue
     |> Option.map float
-
-let private knightCentralityValue (square: square) : float =
-    let (i, j) = square.coordinates
-    if i>1 && i<6 then 2.
-    elif i>0 && i<7 then 1.
-    else 0.
-    +
-    if j>1 && j<6 then 2.
-    elif j>0 && j<7 then 1.
-    else 0.
     
 let private pieceFlexibilityValue (board: board) (square: square) : float =
     Board.GetSquares.pieceVision square board
@@ -48,10 +38,21 @@ let private staticValueOfSquareOnBoard (board: board) (square: square) : float o
         let baseValue = getBaseValue square
         let flexValue =
             match piece.pieceType with
-            | Knight -> knightCentralityValue square |> (*) 0.01  |> Some
-            | Bishop -> pieceFlexibilityValue board square |> (*) 0.002 |> Some
-            | Queen -> pieceFlexibilityValue board square |> (*) 0.0001 |> Some
-            | Rook -> pieceFlexibilityValue board square |> (*) 0.002 |> Some
+            | Knight -> 
+                centralityBonus board square.coordinates
+                |> (*) 0.01  |> Some
+            | Bishop -> 
+                centralityBonus board square.coordinates
+                |> (*) (pieceFlexibilityValue board square)
+                |> (*) 0.002 |> Some
+            | Queen -> 
+                centralityBonus board square.coordinates
+                |> (*) (pieceFlexibilityValue board square)
+                |> (*) 0.0001 |> Some
+            | Rook -> 
+                centralityBonus board square.coordinates
+                |> (*) (pieceFlexibilityValue board square)
+                |> (*) 0.002 |> Some
             | Pawn -> pawnAdvanceValue square |> (*) 0.005 |> Some
             | King -> None
         Option.map2 (+) baseValue flexValue
