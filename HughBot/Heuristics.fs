@@ -46,7 +46,7 @@ let private staticValueOfSquareOnBoard (board: board) (square: square) : float o
             | Bishop -> pieceFlexibilityValue board square |> (*) 0.002 |> Some
             | Queen -> pieceFlexibilityValue board square |> (*) 0.0001 |> Some
             | Rook -> pieceFlexibilityValue board square |> (*) 0.002 |> Some
-            | Pawn -> pawnAdvanceValue square |> (*) 0.01 |> Some
+            | Pawn -> pawnAdvanceValue square |> (*) 0.005 |> Some
             | King -> None
         Option.map2 (+) baseValue flexValue
         |> Option.map (fun value ->
