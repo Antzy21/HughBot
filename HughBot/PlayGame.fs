@@ -64,10 +64,10 @@ let play (gs: gameState) =
     file.WriteLine(GameState.toFen game)
     file.Close()
 
-    printfn("/n/n========/n Game Moves/n========")
+    printfn("\n==========\nGame Moves\n==========")
     List.iter (printfn "%s") moveList
 
-    printfn "/nGood game!"
+    printfn "\nGood game!"
 
 let newGame () =
     GameState.Create.newGame () 
