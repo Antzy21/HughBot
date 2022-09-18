@@ -4,12 +4,12 @@ open FSharp.Extensions
 open Chess
 open System.IO
 
-let getMoveFromNotation (game: gameState) (moves: move list) : move option =
+let private getUserInputMoveFromNotation (game: gameState) (moves: move list) : move option =
     Console.ParseLineWithBreakOption "Please enter move" (fun (notation: string) ->
         NotationParser.tryParse game.playerTurn game.board notation
     )
     
-let getMoveFromList (moves: move list) =
+let private getUserInputMoveFromList (moves: move list) =
     moves |> List.iteri (fun i m -> printfn $"({i}) {Move.getMoveNotation m}")
     Console.ParseLine "Please enter a valid move #" (fun (v: string) ->
         Int.tryParse v
@@ -53,8 +53,8 @@ let play (gs: gameState) =
                 move |> Option.get
             else
                 let moves = GameState.getMoves game
-                getMoveFromNotation game moves
-                |> Option.defaultWith (fun () -> getMoveFromList moves)
+                getUserInputMoveFromNotation game moves
+                |> Option.defaultWith (fun () -> getUserInputMoveFromList moves)
         file.WriteLine($"{Move.getMoveNotation currentMove}")
         moveList <- List.append moveList [Move.getMoveNotation currentMove]
         game <- GameState.Update.makeMove currentMove game
