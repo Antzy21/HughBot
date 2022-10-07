@@ -30,7 +30,7 @@ let private getUserInputMoveFromNotation (game: gameState) (moves: move list) : 
     )
     
 let private getUserInputMoveFromList (moves: move list) =
-    moves |> List.iteri (fun i m -> printfn $"({i}) {Move.getMoveNotation m}")
+    moves |> List.iteri (fun i m -> printfn $"({i}) {Move.getFullNotation m}")
     Console.ParseLine "Please enter a valid move #" (fun (v: string) ->
         Int.tryParse v
         |> Option.bind (fun i ->
@@ -41,31 +41,31 @@ let private getUserInputMoveFromList (moves: move list) =
         )
     )
 
-let private getComputerMove (game: gameState) (file: StreamWriter): move =
+let private getComputerMove (game: game) (file: StreamWriter): move =
     printfn "\nCalculating move...\n"
     let move, _ =
         try
             MinMax.evaluation game
         with
         | ex ->
-            GameState.print game
+            Game.print game
             file.WriteLine($"{ex}")
-            file.WriteLine($"{GameState.toFen game}")
+            file.WriteLine($"{GameState.toFen game.gameState}")
             file.Close()
             failwith $"{ex}" 
     move |> Option.get
 
-let private getOpponentMove (game: gameState) (opponent: Opponent) (file: StreamWriter): move =
+let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWriter): move =
     match opponent with
     | Computer -> getComputerMove game file
     | _ ->
-        let moves = GameState.getMoves game
-        getUserInputMoveFromNotation game moves
+        let moves = GameState.getMoves game.gameState
+        getUserInputMoveFromNotation game.gameState moves
         |> Option.defaultWith (fun () -> getUserInputMoveFromList moves)
 
-let play (gs: gameState) =
+let play (game: game) =
     
-    let mutable game = gs
+    let mutable game = game
     printfn "I'm HughBot, a chess engine. Let's play!"
     let opponent = getUserInputForOpponent ()
     let botColour = 
@@ -82,25 +82,22 @@ let play (gs: gameState) =
     let path = $"../../../RecordedGames/{fileName}_{date}.log"
     let file = File.CreateText(path)
 
-    let mutable moveList : string list = []
-
-    while GameState.isGameOver game |> not do
+    while GameState.isGameOver game.gameState |> not do
         let currentMove =
-            if game.playerTurn = botColour then
+            if game.gameState.playerTurn = botColour then
                 getComputerMove game file
             else
                 getOpponentMove game opponent file
-        file.WriteLine($"{Move.getMoveNotation currentMove}")
-        moveList <- List.append moveList [Move.getMoveNotation currentMove]
-        game <- GameState.Update.makeMove currentMove game
-        GameState.print game
-        GameState.toFen game |> printfn "%s"
+        file.WriteLine($"{Move.getFullNotation currentMove}")
+        game <- Game.Update.makeMove currentMove game
+        Game.print game
+        GameState.toFen game.gameState |> printfn "%s"
     
-    file.WriteLine(GameState.toFen game)
+    file.WriteLine(GameState.toFen game.gameState)
     file.Close()
 
     printfn("\n==========\nGame Moves\n==========")
-    List.iter (printfn "%s") moveList
+    printfn "%s" (Game.pgn game)
 
     printfn "\nGood game!"
 
@@ -108,9 +105,12 @@ let play (gs: gameState) =
         File.Delete path
 
 let newGame () =
-    GameState.Create.newGame () 
+    Game.Create.newGame () 
     |> play
 
 let playFromFen (fen : string) =
-    GameState.Create.fromFen fen
+    {
+        moves = []
+        gameState = GameState.Create.fromFen fen
+    }
     |> play
