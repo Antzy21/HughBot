@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\FSharp.Extensions\FSharp.Extensions.fsproj" />
-    <ProjectReference Include="..\..\FunctionalChess\ChessModule.fsproj" />
+    <ProjectReference Include="..\..\FunctionalChess\ChessModule\ChessModule.fsproj" />
   </ItemGroup>
 
 </Project>
