@@ -38,7 +38,7 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
             newGsStaticEval
             |> List.map (fun (staticEvaluation, move) ->
                 if depth < 2 then
-                    Move.getFullNotation move
+                    MoveParser.FullNotation.toString move
                     |> printfn "%s Turn: %d %s - Eval : %.2f - Move: %s"
                         (String.replicate depth "  ") (game.gameState.fullMoveClock)
                         (game.gameState.playerTurn.ToString()) staticEvaluation
@@ -66,7 +66,7 @@ let evaluation (game: game) : move option * float =
     let config = {maxDepth = 4; shallowTrim = 4; deepTrim = 2; deepTrimDepth = 4}
     let move, eval = minMaxEvaluation config 0 game
     Option.iter (
-        Move.getFullNotation >> printfn "\n\nEval : %.2f - Move: %s" eval
+        MoveParser.FullNotation.toString >> printfn "\n\nEval : %.2f - Move: %s" eval
     ) move
     
     stopWatch.Stop()

@@ -26,11 +26,11 @@ let private getUserInputForOpponent () : Opponent =
 
 let private getUserInputMoveFromNotation (game: gameState) (moves: move list) : move option =
     Console.ParseLineWithBreakOption "Please enter move" (fun (notation: string) ->
-        NotationParser.tryParse game.playerTurn game.board notation
+        MoveParser.tryParse game.playerTurn game.board notation
     )
     
 let private getUserInputMoveFromList (moves: move list) =
-    moves |> List.iteri (fun i m -> printfn $"({i}) {Move.getFullNotation m}")
+    moves |> List.iteri (fun i m -> printfn $"({i}) {MoveParser.FullNotation.toString m}")
     Console.ParseLine "Please enter a valid move #" (fun (v: string) ->
         Int.tryParse v
         |> Option.bind (fun i ->
@@ -88,7 +88,7 @@ let play (game: game) =
                 getComputerMove game file
             else
                 getOpponentMove game opponent file
-        file.WriteLine($"{Move.getFullNotation currentMove}")
+        file.WriteLine($"{MoveParser.FullNotation.toString currentMove}")
         game <- Game.Update.makeMove currentMove game
         Game.print game
         GameState.toFen game.gameState |> printfn "%s"
