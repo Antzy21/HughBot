@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "HughBot", "HughBot\HughBot.fsproj", "{BF814810-B6D6-4EF6-959E-4196A45D9C2C}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ChessModule", "..\FunctionalChess\ChessModule.fsproj", "{0D5B07B2-0E3B-4290-AA56-776E1EDA585E}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ChessModule", "..\FunctionalChess\ChessModule\ChessModule.fsproj", "{0D5B07B2-0E3B-4290-AA56-776E1EDA585E}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FSharp.Extensions", "..\..\FSharp.Extensions\FSharp.Extensions.fsproj", "{813CF34D-868F-4929-B605-BFDBB757C5F0}"
 EndProject
