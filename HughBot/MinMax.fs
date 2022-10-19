@@ -34,14 +34,17 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
 
         let newGsStaticEval = List.take (min orderedEvals.Length trim) orderedEvals
 
+        let printEval move staticEvaluation =
+            MoveParser.FullNotation.toString move
+            |> printfn "%s Turn: %d %s - Eval : %.2f - Move: %s"
+                (String.replicate depth "  ") (game.gameState.fullMoveClock)
+                (game.gameState.playerTurn.ToString()) staticEvaluation
+
         let movesAndEvals =
             newGsStaticEval
             |> List.map (fun (staticEvaluation, move) ->
                 if depth < 2 then
-                    MoveParser.FullNotation.toString move
-                    |> printfn "%s Turn: %d %s - Eval : %.2f - Move: %s"
-                        (String.replicate depth "  ") (game.gameState.fullMoveClock)
-                        (game.gameState.playerTurn.ToString()) staticEvaluation
+                    printEval move staticEvaluation
                 let newGs = Game.Update.makeMove move game
                 let evaluation = 
                     newGs
