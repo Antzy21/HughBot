@@ -6,54 +6,55 @@ open Checkerboard
 open FSharp.Extensions
 
 let private getBaseValue (square: square) : float option =
-    square
-    |> Square.getPiece
+    square.Value
     |> Piece.getValue
     |> Option.map float
     
-let private pieceFlexibilityValue (board: board) (square: square) : float =
-    Board.GetSquares.pieceVision square board
+let private pieceFlexibilityValue (board: board) (coords: coordinates) : float =
+    Board.GetSquares.pieceVision board coords
     |> List.length |> float
 
-let centralityBonusOnLine i : float =
+let centralityBonusOnLine (i: int) : float =
     3.5-(abs((float i) - 3.5))
 
-let private centralityBonus (board: board) ((i, j): coordinates<int>) : float =
+let private centralityBonus (board: board) ((i, j): coordinates) : float =
     centralityBonusOnLine i + centralityBonusOnLine j
 
-let private pawnAdvanceValue (square: square) : float =
-    let piece = Square.getPiece square
-    let (i,j) = square.coordinates
+let private pawnAdvanceValue (sqr: squareBitMap) ((i,j): coordinates) : float =
     let centralityBonus = centralityBonusOnLine i
-    match piece.colour with
+    let colour = Square.getPieceColour sqr |> Option.get
+    match colour with
     | White -> 
         (float j) - 1.
     | Black ->
         6. - (float j)
     |> (*) (1. + centralityBonus*0.2)
-let private staticValueOfSquareOnBoard (board: board) (square: square) : float option =
-    match square.piece with
+let private staticValueOfSquareOnBoard (board: board) (coords: coordinates) (sqr: squareBitMap) : float option =
+    match Square.Parser.fromBitMaps sqr with
     | None -> None
     | Some piece ->
-        let baseValue = getBaseValue square
+        let baseValue =
+            Board.GetSquare.fromCoordinates board coords
+            |> Square.Parser.fromBitMaps
+            |> getBaseValue
         let flexValue =
             match piece.pieceType with
             | Knight -> 
-                centralityBonus board square.coordinates
+                centralityBonus board coords
                 |> (*) 0.01  |> Some
             | Bishop -> 
-                centralityBonus board square.coordinates
-                |> (*) (pieceFlexibilityValue board square)
+                centralityBonus board coords
+                |> (*) (pieceFlexibilityValue board coords)
                 |> (*) 0.002 |> Some
             | Queen -> 
-                centralityBonus board square.coordinates
-                |> (*) (pieceFlexibilityValue board square)
+                centralityBonus board coords
+                |> (*) (pieceFlexibilityValue board coords)
                 |> (*) 0.0001 |> Some
             | Rook -> 
-                centralityBonus board square.coordinates
-                |> (*) (pieceFlexibilityValue board square)
+                centralityBonus board coords
+                |> (*) (pieceFlexibilityValue board coords)
                 |> (*) 0.002 |> Some
-            | Pawn -> pawnAdvanceValue square |> (*) 0.005 |> Some
+            | Pawn -> pawnAdvanceValue sqr coords |> (*) 0.005 |> Some
             | King -> None
         Option.map2 (+) baseValue flexValue
         |> Option.map (fun value ->
@@ -77,8 +78,8 @@ let staticEvaluationOfGameState (game: gameState) : float =
         gameOverEvaluation 0 game
     else
         game.board
-        |> Array2D.fold (fun boardValue square ->
-            match staticValueOfSquareOnBoard game.board square with
+        |> Board.foldij (fun coords boardValue sqr ->
+            match staticValueOfSquareOnBoard game.board coords sqr with
             | None -> boardValue
             | Some value -> boardValue + value
         ) 0

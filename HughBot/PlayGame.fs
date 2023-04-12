@@ -29,8 +29,8 @@ let private getUserInputMoveFromNotation (game: gameState) (moves: move list) : 
         MoveParser.tryParse game.playerTurn game.board notation
     )
     
-let private getUserInputMoveFromList (moves: move list) =
-    moves |> List.iteri (fun i m -> printfn $"({i}) {MoveParser.FullNotation.toString m}")
+let private getUserInputMoveFromList (board) (moves: move list) =
+    moves |> List.iteri (fun i m -> printfn $"({i}) {MoveParser.FullNotation.toString board m}")
     Console.ParseLine "Please enter a valid move #" (fun (v: string) ->
         Int.tryParse v
         |> Option.bind (fun i ->
@@ -61,7 +61,7 @@ let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWrite
     | _ ->
         let moves = GameState.getMoves game.gameState
         getUserInputMoveFromNotation game.gameState moves
-        |> Option.defaultWith (fun () -> getUserInputMoveFromList moves)
+        |> Option.defaultWith (fun () -> getUserInputMoveFromList game.gameState.board moves)
 
 let play (game: game) =
     
@@ -88,7 +88,7 @@ let play (game: game) =
                 getComputerMove game file
             else
                 getOpponentMove game opponent file
-        file.WriteLine($"{MoveParser.FullNotation.toString currentMove}")
+        file.WriteLine($"{MoveParser.FullNotation.toString game.gameState.board currentMove}")
         game <- Game.Update.makeMove currentMove game
         Game.print game
         GameState.toFen game.gameState |> printfn "%s"
