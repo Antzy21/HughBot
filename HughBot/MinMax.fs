@@ -10,6 +10,7 @@ let private getMovesAndEvaluationPairs (game: game) : (float * move) list =
     |> List.map (fun move ->
         let newGs = Game.Update.makeMove move game
         let eval = Heuristics.staticEvaluationOfGameState newGs.gameState
+        Game.Update.undoMove newGs |> ignore
         eval, move
     )
 
@@ -25,6 +26,13 @@ let private trimMoveList (depth: int) (config: minMaxConfig) (moveEvalPairs: (fl
         else config.shallowTrim
     List.take (min moveEvalPairs.Length trim) moveEvalPairs
 
+let private printEval game depth move staticEvaluation =
+    MoveParser.FullNotation.toString move
+    |> sprintf "%s Turn: %d %s - Eval : %.2f - Move: %s"
+        (String.replicate depth "  ") (game.gameState.fullMoveClock)
+        (game.gameState.playerTurn.ToString()) staticEvaluation 
+    |> printfn "%s"
+
 let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game) : move option * float =
     if depth = config.maxDepth then
         None, Heuristics.staticEvaluationOfGameState game.gameState
@@ -36,18 +44,12 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
             |> orderMoves game
             |> trimMoveList depth config
 
-        let printEval move staticEvaluation =
-            MoveParser.FullNotation.toString move
-            |> printfn "%s Turn: %d %s - Eval : %.2f - Move: %s"
-                (String.replicate depth "  ") (game.gameState.fullMoveClock)
-                (game.gameState.playerTurn.ToString()) staticEvaluation
-
         let movesAndEvals =
             if depth = 0 then
                 printf "Total moves: %d" orderedTrimmedMovesAndEvals.Length
                 orderedTrimmedMovesAndEvals
                 |> List.map (fun (staticEvaluation, move) ->
-                    printEval move staticEvaluation
+                    printEval game depth move staticEvaluation
                     let gameCopy = Game.Create.deepCopy game
                     let asyncTask = async {
                         let newGs = Game.Update.makeMove move gameCopy
@@ -70,7 +72,7 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
                 orderedTrimmedMovesAndEvals
                 |> List.map (fun (staticEvaluation, move) ->
                     if depth < 2 then
-                        printEval move staticEvaluation
+                        printEval game depth move staticEvaluation
                     let newGs = Game.Update.makeMove move game
                     let evaluation = 
                         newGs
