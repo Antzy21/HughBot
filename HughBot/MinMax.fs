@@ -4,20 +4,22 @@ open Chess
 
 type minMaxConfig = {maxDepth: int; shallowTrim: int; deepTrim: int; deepTrimDepth: int;}
 
+/// From a gievn game, get the moves available and calculate the heuristic value if the move is applied.
+let private getMovesAndEvaluationPairs (game: game) : (float * move) list =
+    GameState.getMoves game.gameState
+    |> List.map (fun move ->
+        let newGs = Game.Update.makeMove move game
+        let eval = Heuristics.staticEvaluationOfGameState newGs.gameState
+        eval, move
+    )
+
 let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game) : move option * float =
     if depth = config.maxDepth then
         None, Heuristics.staticEvaluationOfGameState game.gameState
     else if GameState.getMoves game.gameState = List.empty then
         None, Heuristics.gameOverEvaluation depth game.gameState
     else
-        let ms = GameState.getMoves game.gameState
-
-        let newGsStaticEvals = 
-            List.map (fun move ->
-                let newGs = Game.Update.makeMove move game
-                let eval = Heuristics.staticEvaluationOfGameState newGs.gameState
-                eval, move
-            ) ms
+        let newGsStaticEvals = getMovesAndEvaluationPairs game
 
         let orderedEvals = 
             newGsStaticEvals |>
