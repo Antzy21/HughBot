@@ -15,10 +15,10 @@ let private pieceFlexibilityValue (board: board) (square: square) : float =
     Board.GetSquares.pieceVision square board
     |> List.length |> float
 
-let centralityBonusOnLine (i: sbyte) : float =
+let centralityBonusOnLine i : float =
     3.5-(abs((float i) - 3.5))
 
-let private centralityBonus (board: board) ((i, j): coordinates<sbyte>) : float =
+let private centralityBonus (board: board) ((i, j): coordinates<int>) : float =
     centralityBonusOnLine i + centralityBonusOnLine j
 
 let private pawnAdvanceValue (square: square) : float =
