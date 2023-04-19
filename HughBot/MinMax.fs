@@ -36,40 +36,17 @@ let rec private minMaxEvaluation (depth: int) (game: game) : move option * float
             |> orderMoves game
 
         let movesAndEvals =
-            if depth = 4 then
-                printf "Total moves: %d" orderedTrimmedMovesAndEvals.Length
-                orderedTrimmedMovesAndEvals
-                |> List.map (fun moveAndEval ->
+            orderedTrimmedMovesAndEvals
+            |> List.map (fun moveAndEval ->
+                if depth > 1 then
                     printEval game depth moveAndEval.move moveAndEval.eval
-                    let asyncTask = async {
-                        let newGs = Game.Update.makeMove moveAndEval.move game
-                        let evaluation =
-                            newGs
-                            |> minMaxEvaluation (depth - 1)
-                            |> snd
-                        return (Some moveAndEval.move, evaluation)
-                    }
-                    Async.StartAsTask(asyncTask)
-                )
-                |> List.map (fun task ->
-                    let returnValue =
-                        Async.AwaitTask task
-                        |> Async.RunSynchronously
-                    printfn "Completed"
-                    returnValue
-                )
-            else
-                orderedTrimmedMovesAndEvals
-                |> List.map (fun moveAndEval ->
-                    if depth < 2 then
-                        printEval game depth moveAndEval.move moveAndEval.eval
-                    let newGs = Game.Update.makeMove moveAndEval.move game
-                    let evaluation = 
-                        newGs
-                        |> minMaxEvaluation (depth - 1)
-                        |> snd
-                    (Some moveAndEval.move, evaluation)
-                )
+                let newGs = Game.Update.makeMove moveAndEval.move game
+                let evaluation = 
+                    newGs
+                    |> minMaxEvaluation (depth - 1)
+                    |> snd
+                (Some moveAndEval.move, evaluation)
+            )
 
         let bestMoveAndEval = 
             movesAndEvals |>
