@@ -3,8 +3,6 @@
 open Chess
 open SearchAlgorithms
 
-type minMaxConfig = {maxDepth: int; shallowTrim: int; deepTrim: int; deepTrimDepth: int;}
-
 /// From a gievn game, get the moves available and calculate the heuristic value if the move is applied.
 let private getMovesAndEvaluationPairs (game: game) : moveAndEvaluation<move, float> list =
     GameState.getMoves game.gameState
@@ -20,12 +18,6 @@ let private orderMoves (game: game) (moveEvalPairs: moveAndEvaluation<move, floa
     | White -> moveEvalPairs |> List.sortByDescending (fun mep -> mep.eval)
     | Black -> moveEvalPairs |> List.sortByDescending (fun mep -> mep.eval)
 
-let private trimMoveList (depth: int) (config: minMaxConfig) (moveEvalPairs: moveAndEvaluation<move, float> list) : moveAndEvaluation<move, float> list =
-    let trim =
-        if depth >= config.deepTrimDepth then config.deepTrim
-        else config.shallowTrim
-    List.take (min moveEvalPairs.Length trim) moveEvalPairs
-
 let private printEval game depth move staticEvaluation =
     MoveParser.FullNotation.toString game.gameState.board move
     |> sprintf "%s Turn: %d %s - Eval : %.2f - Move: %s"
@@ -33,8 +25,8 @@ let private printEval game depth move staticEvaluation =
         (game.gameState.playerTurn.ToString()) staticEvaluation 
     |> printfn "%s"
 
-let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game) : move option * float =
-    if depth = config.maxDepth then
+let rec private minMaxEvaluation (depth: int) (game: game) : move option * float =
+    if depth = 0 then
         None, Heuristics.staticEvaluationOfGameState game.gameState
     else if GameState.getMoves game.gameState = List.empty then
         None, Heuristics.gameOverEvaluation depth game.gameState
@@ -42,10 +34,9 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
         let orderedTrimmedMovesAndEvals =
             getMovesAndEvaluationPairs game
             |> orderMoves game
-            |> trimMoveList depth config
 
         let movesAndEvals =
-            if depth = 0 then
+            if depth = 4 then
                 printf "Total moves: %d" orderedTrimmedMovesAndEvals.Length
                 orderedTrimmedMovesAndEvals
                 |> List.map (fun moveAndEval ->
@@ -54,7 +45,7 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
                         let newGs = Game.Update.makeMove moveAndEval.move game
                         let evaluation =
                             newGs
-                            |> minMaxEvaluation config (depth + 1)
+                            |> minMaxEvaluation (depth - 1)
                             |> snd
                         return (Some moveAndEval.move, evaluation)
                     }
@@ -75,7 +66,7 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
                     let newGs = Game.Update.makeMove moveAndEval.move game
                     let evaluation = 
                         newGs
-                        |> minMaxEvaluation config (depth + 1)
+                        |> minMaxEvaluation (depth - 1)
                         |> snd
                     (Some moveAndEval.move, evaluation)
                 )
@@ -92,8 +83,7 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
 
 let evaluation (game: game) : move option * float =
     let stopWatch = System.Diagnostics.Stopwatch.StartNew()
-    let config = {maxDepth = 4; shallowTrim = 50; deepTrim = 4; deepTrimDepth = 2}
-    let move, eval = minMaxEvaluation config 0 game
+    let move, eval = minMaxEvaluation 4 game
     Option.iter (
         MoveParser.FullNotation.toString game.gameState.board >> printfn "\n\nEval : %.2f - Move: %s" eval
     ) move
