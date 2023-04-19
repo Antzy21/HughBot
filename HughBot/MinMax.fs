@@ -1,25 +1,26 @@
 ﻿module MinMax
 
 open Chess
+open SearchAlgorithms
 
 type minMaxConfig = {maxDepth: int; shallowTrim: int; deepTrim: int; deepTrimDepth: int;}
 
 /// From a gievn game, get the moves available and calculate the heuristic value if the move is applied.
-let private getMovesAndEvaluationPairs (game: game) : (float * move) list =
+let private getMovesAndEvaluationPairs (game: game) : moveAndEvaluation<move, float> list =
     GameState.getMoves game.gameState
     |> List.map (fun move ->
         let newGs = Game.Update.makeMove move game
         let eval = Heuristics.staticEvaluationOfGameState newGs.gameState
-        eval, move
+        {move = move; eval = eval}
     )
 
 /// Orders the list of moves based on evaluation desired by player of move
-let private orderMoves (game: game) (moveEvalPairs: (float * move) list) : (float * move) list =
+let private orderMoves (game: game) (moveEvalPairs: moveAndEvaluation<move, float> list) : moveAndEvaluation<move, float> list =
     match game.gameState.playerTurn with
-    | White -> List.sortByDescending fst moveEvalPairs
-    | Black -> List.sortBy fst moveEvalPairs
+    | White -> moveEvalPairs |> List.sortByDescending (fun mep -> mep.eval)
+    | Black -> moveEvalPairs |> List.sortByDescending (fun mep -> mep.eval)
 
-let private trimMoveList (depth: int) (config: minMaxConfig) (moveEvalPairs: (float * move) list) : (float * move) list =
+let private trimMoveList (depth: int) (config: minMaxConfig) (moveEvalPairs: moveAndEvaluation<move, float> list) : moveAndEvaluation<move, float> list =
     let trim =
         if depth >= config.deepTrimDepth then config.deepTrim
         else config.shallowTrim
@@ -47,15 +48,15 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
             if depth = 0 then
                 printf "Total moves: %d" orderedTrimmedMovesAndEvals.Length
                 orderedTrimmedMovesAndEvals
-                |> List.map (fun (staticEvaluation, move) ->
-                    printEval game depth move staticEvaluation
+                |> List.map (fun moveAndEval ->
+                    printEval game depth moveAndEval.move moveAndEval.eval
                     let asyncTask = async {
-                        let newGs = Game.Update.makeMove move game
+                        let newGs = Game.Update.makeMove moveAndEval.move game
                         let evaluation =
                             newGs
                             |> minMaxEvaluation config (depth + 1)
                             |> snd
-                        return (Some move, evaluation)
+                        return (Some moveAndEval.move, evaluation)
                     }
                     Async.StartAsTask(asyncTask)
                 )
@@ -68,15 +69,15 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
                 )
             else
                 orderedTrimmedMovesAndEvals
-                |> List.map (fun (staticEvaluation, move) ->
+                |> List.map (fun moveAndEval ->
                     if depth < 2 then
-                        printEval game depth move staticEvaluation
-                    let newGs = Game.Update.makeMove move game
+                        printEval game depth moveAndEval.move moveAndEval.eval
+                    let newGs = Game.Update.makeMove moveAndEval.move game
                     let evaluation = 
                         newGs
                         |> minMaxEvaluation config (depth + 1)
                         |> snd
-                    (Some move, evaluation)
+                    (Some moveAndEval.move, evaluation)
                 )
 
         let bestMoveAndEval = 
