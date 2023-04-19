@@ -4,13 +4,12 @@ open Chess
 
 type minMaxConfig = {maxDepth: int; shallowTrim: int; deepTrim: int; deepTrimDepth: int;}
 
-/// From a given game, get the moves available and calculate the heuristic value if the move is applied.
+/// From a gievn game, get the moves available and calculate the heuristic value if the move is applied.
 let private getMovesAndEvaluationPairs (game: game) : (float * move) list =
     GameState.getMoves game.gameState
     |> List.map (fun move ->
         let newGs = Game.Update.makeMove move game
         let eval = Heuristics.staticEvaluationOfGameState newGs.gameState
-        Game.Update.undoMove newGs |> ignore
         eval, move
     )
 
@@ -27,7 +26,7 @@ let private trimMoveList (depth: int) (config: minMaxConfig) (moveEvalPairs: (fl
     List.take (min moveEvalPairs.Length trim) moveEvalPairs
 
 let private printEval game depth move staticEvaluation =
-    MoveParser.FullNotation.toString move
+    MoveParser.FullNotation.toString game.gameState.board move
     |> sprintf "%s Turn: %d %s - Eval : %.2f - Move: %s"
         (String.replicate depth "  ") (game.gameState.fullMoveClock)
         (game.gameState.playerTurn.ToString()) staticEvaluation 
@@ -50,9 +49,8 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
                 orderedTrimmedMovesAndEvals
                 |> List.map (fun (staticEvaluation, move) ->
                     printEval game depth move staticEvaluation
-                    let gameCopy = Game.Create.deepCopy game
                     let asyncTask = async {
-                        let newGs = Game.Update.makeMove move gameCopy
+                        let newGs = Game.Update.makeMove move game
                         let evaluation =
                             newGs
                             |> minMaxEvaluation config (depth + 1)
@@ -78,7 +76,6 @@ let rec private minMaxEvaluation (config: minMaxConfig) (depth: int) (game: game
                         newGs
                         |> minMaxEvaluation config (depth + 1)
                         |> snd
-                    Game.Update.undoMove newGs |> ignore
                     (Some move, evaluation)
                 )
 
@@ -97,7 +94,7 @@ let evaluation (game: game) : move option * float =
     let config = {maxDepth = 4; shallowTrim = 50; deepTrim = 4; deepTrimDepth = 2}
     let move, eval = minMaxEvaluation config 0 game
     Option.iter (
-        MoveParser.FullNotation.toString >> printfn "\n\nEval : %.2f - Move: %s" eval
+        MoveParser.FullNotation.toString game.gameState.board >> printfn "\n\nEval : %.2f - Move: %s" eval
     ) move
     
     stopWatch.Stop()
