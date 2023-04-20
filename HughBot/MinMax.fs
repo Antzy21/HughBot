@@ -9,7 +9,7 @@ let private getMovesAndEvaluationPairs (game: game) : moveAndEvaluation<move, fl
     |> List.map (fun move ->
         let newGs = Game.Update.makeMove move game
         let eval = Heuristics.staticEvaluationOfGameState newGs.gameState
-        {move = move; eval = eval}
+        {move = Some move; eval = eval}
     )
 
 /// Orders the list of moves based on evaluation desired by player of move
@@ -39,13 +39,13 @@ let rec private minMaxEvaluation (depth: int) (game: game) : move option * float
             orderedTrimmedMovesAndEvals
             |> List.map (fun moveAndEval ->
                 if depth > 1 then
-                    printEval game depth moveAndEval.move moveAndEval.eval
-                let newGs = Game.Update.makeMove moveAndEval.move game
+                    printEval game depth moveAndEval.move.Value moveAndEval.eval
+                let newGs = Game.Update.makeMove moveAndEval.move.Value game
                 let evaluation = 
                     newGs
                     |> minMaxEvaluation (depth - 1)
                     |> snd
-                (Some moveAndEval.move, evaluation)
+                (moveAndEval.move, evaluation)
             )
 
         let bestMoveAndEval = 
