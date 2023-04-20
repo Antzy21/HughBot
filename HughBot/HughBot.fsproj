@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\FunctionalChess\ChessModule\ChessModule.fsproj" />
+    <ProjectReference Include="..\..\SearchAlgorithms\SearchAlgorithms\SearchAlgorithms.fsproj" />
   </ItemGroup>
 
 </Project>
