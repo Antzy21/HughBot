@@ -83,7 +83,7 @@ let private gameOverEvaluation (turnsUntillGameOver: int) (game: game) : float =
 // The general evaluation wrapper function.
 // Just needs to know how to evaluate each individual square.
 let private staticEvaluationOfGameState (squareEvalFunction: board -> coordinates -> squareBitMap -> float option) (game: game) : float =
-    if GameState.getMoves game.gameState = List.empty then
+    if Game.isGameOver game then
         gameOverEvaluation 0 game
     else
         game.gameState.board
