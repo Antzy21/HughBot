@@ -4,11 +4,6 @@ open System
 open Chess
 open Checkerboard
 open FSharp.Extensions
-
-let private getBaseValue (square: square) : float option =
-    square.Value
-    |> Piece.getValue
-    |> Option.map float
     
 let private pieceFlexibilityValue (board: board) (coords: coordinates) : float =
     Board.GetSquares.pieceVision board coords
@@ -20,42 +15,54 @@ let centralityBonusOnLine (i: int) : float =
 let private centralityBonus (board: board) ((i, j): coordinates) : float =
     centralityBonusOnLine i + centralityBonusOnLine j
 
-let private pawnAdvanceValue (sqr: squareBitMap) ((i,j): coordinates) : float =
+let private pawnAdvanceValue (piece: piece) ((i,j): coordinates) : float =
     let centralityBonus = centralityBonusOnLine i
-    let colour = Square.getPieceColour sqr |> Option.get
-    match colour with
+    match piece.colour with
     | White -> 
         (float j) - 1.
     | Black ->
         6. - (float j)
     |> (*) (1. + centralityBonus*0.2)
-let private staticValueOfSquareOnBoard (board: board) (coords: coordinates) (sqr: squareBitMap) : float option =
+
+let private calculateFlexValue (piece: piece) (board: board) (coords: coordinates) : float option =
+    match piece.pieceType with
+        | Knight -> 
+            centralityBonus board coords
+            |> (*) 0.01  |> Some
+        | Bishop -> 
+            centralityBonus board coords
+            |> (*) (pieceFlexibilityValue board coords)
+            |> (*) 0.002 |> Some
+        | Queen -> 
+            centralityBonus board coords
+            |> (*) (pieceFlexibilityValue board coords)
+            |> (*) 0.0001 |> Some
+        | Rook -> 
+            centralityBonus board coords
+            |> (*) (pieceFlexibilityValue board coords)
+            |> (*) 0.002 |> Some
+        | Pawn -> pawnAdvanceValue piece coords |> (*) 0.005 |> Some
+        | King -> None
+
+let private basicPieceValueEvaluationOfSquare (board: board) (coords: coordinates) (sqr: squareBitMap) : float option =
     match Square.Parser.fromBitMaps sqr with
     | None -> None
     | Some piece ->
-        let baseValue =
-            Board.GetSquare.fromCoordinates board coords
-            |> Square.Parser.fromBitMaps
-            |> getBaseValue
-        let flexValue =
-            match piece.pieceType with
-            | Knight -> 
-                centralityBonus board coords
-                |> (*) 0.01  |> Some
-            | Bishop -> 
-                centralityBonus board coords
-                |> (*) (pieceFlexibilityValue board coords)
-                |> (*) 0.002 |> Some
-            | Queen -> 
-                centralityBonus board coords
-                |> (*) (pieceFlexibilityValue board coords)
-                |> (*) 0.0001 |> Some
-            | Rook -> 
-                centralityBonus board coords
-                |> (*) (pieceFlexibilityValue board coords)
-                |> (*) 0.002 |> Some
-            | Pawn -> pawnAdvanceValue sqr coords |> (*) 0.005 |> Some
-            | King -> None
+        let baseValue = Piece.getValue piece |> Option.map float
+        baseValue
+        |> Option.map (fun value ->
+            match piece.colour with
+            | White -> 1.
+            | Black -> -1.
+            |> (*) value 
+        )
+
+let private advancedEvaluationOfSquare (board: board) (coords: coordinates) (sqr: squareBitMap) : float option =
+    match Square.Parser.fromBitMaps sqr with
+    | None -> None
+    | Some piece ->
+        let baseValue = Piece.getValue piece |> Option.map float
+        let flexValue = calculateFlexValue piece board coords
         Option.map2 (+) baseValue flexValue
         |> Option.map (fun value ->
             match piece.colour with
@@ -64,7 +71,7 @@ let private staticValueOfSquareOnBoard (board: board) (coords: coordinates) (sqr
             |> (*) value 
         )
 
-let gameOverEvaluation (turnsUntillGameOver: int) (game: gameState) : float =
+let private gameOverEvaluation (turnsUntillGameOver: int) (game: gameState) : float =
     if Board.isInCheck game.playerTurn game.board then
         match game.playerTurn with
         | White -> -1000 + turnsUntillGameOver
@@ -73,16 +80,19 @@ let gameOverEvaluation (turnsUntillGameOver: int) (game: gameState) : float =
         0
     |> float
 
-let staticEvaluationOfGameState (game: gameState) : float =
+// The general evaluation wrapper function.
+// Just needs to know how to evaluate each individual square.
+let private staticEvaluationOfGameState (squareEvalFunction: board -> coordinates -> squareBitMap -> float option) (game: gameState) : float =
     if GameState.getMoves game = List.empty then
         gameOverEvaluation 0 game
     else
         game.board
         |> Board.foldij (fun coords boardValue sqr ->
-            match staticValueOfSquareOnBoard game.board coords sqr with
+            match advancedEvaluationOfSquare game.board coords sqr with
             | None -> boardValue
             | Some value -> boardValue + value
         ) 0
 
-let printEvalutation (game: gameState) =
-    printfn "Static heuristics evaluation: %.3f" (staticEvaluationOfGameState game)
+let pieceValueOnlyEval = staticEvaluationOfGameState basicPieceValueEvaluationOfSquare
+
+let advancedEval = staticEvaluationOfGameState advancedEvaluationOfSquare

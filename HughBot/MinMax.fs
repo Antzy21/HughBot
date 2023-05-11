@@ -13,7 +13,7 @@ let private getMovesAndNewGameStates (gameState: gameState) : (move * gameState)
 
 /// Orders the list of moves based on evaluation desired by player of move
 let private orderMovesAndGsByStaticEval (isMaxing: bool) : (move * gameState) list -> (move * gameState) list =
-    fun (move, gameState) -> Heuristics.staticEvaluationOfGameState gameState
+    fun (move, gameState) -> Heuristics.advancedEval gameState
     |>
     if isMaxing then
         List.sortByDescending
@@ -24,7 +24,7 @@ let private getNodesFromParent (gameState: gameState) =
     getMovesAndNewGameStates gameState
     //|> orderMovesAndGsByStaticEval (Colour.toBool gameState.playerTurn)
 
-let private evaluationFunction move gameState = Heuristics.staticEvaluationOfGameState gameState
+let private evaluationFunction move gameState = Heuristics.advancedEval gameState
 
 let private chessMinMax = Algorithms.minMaxAbPruning getNodesFromParent evaluationFunction
 
