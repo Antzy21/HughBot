@@ -33,7 +33,11 @@ let evaluation (game: game) : move option * float =
     let stopWatch = System.Diagnostics.Stopwatch.StartNew()
     let depth = 2
     let isMaxing = Colour.toBool game.gameState.playerTurn
-    let move, eval = chessMinMax depth isMaxing (Some game.moves.Head) game.gameState
+    let previousMove = 
+        match game.moves with
+        | [] -> None
+        | lastMove :: _ -> Some lastMove
+    let move, eval = chessMinMax depth isMaxing previousMove game.gameState
     
     Option.iter (
         MoveParser.FullNotation.toString game.gameState.board
