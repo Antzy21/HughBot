@@ -3,7 +3,7 @@
 open Chess
 open SearchAlgorithms
 
-/// From a gievn game, get the moves available and calculate the heuristic value if the move is applied.
+/// From a given game, get the moves available and calculate the heuristic value if the move is applied.
 let private getMovesAndNewGameStates (gameState: gameState) : (move * gameState) list =
     GameState.getMoves gameState
     |> List.map (fun move ->
@@ -20,27 +20,24 @@ let private orderMovesAndGsByStaticEval (isMaxing: bool) : (move * gameState) li
     else
         List.sortBy
 
-let private printEval gameState depth move staticEvaluation =
-    MoveParser.FullNotation.toString gameState.board move
-    |> sprintf "%s Turn: %d %s - Eval : %.2f - Move: %s"
-        (String.replicate depth "  ") (gameState.fullMoveClock)
-        (gameState.playerTurn.ToString()) staticEvaluation 
-    |> printfn "%s"
-
 let private getNodesFromParent (gameState: gameState) =
     getMovesAndNewGameStates gameState
-    |> orderMovesAndGsByStaticEval (Colour.toBool gameState.playerTurn)
+    //|> orderMovesAndGsByStaticEval (Colour.toBool gameState.playerTurn)
 
 let private evaluationFunction move gameState = Heuristics.staticEvaluationOfGameState gameState
 
 let private chessMinMax = Algorithms.minMaxAbPruning getNodesFromParent evaluationFunction
 
 let evaluation (game: game) : move option * float =
+    
     let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+    let depth = 2
     let isMaxing = Colour.toBool game.gameState.playerTurn
-    let move, eval = chessMinMax 2 isMaxing None game.gameState
+    let move, eval = chessMinMax depth isMaxing (Some game.moves.Head) game.gameState
+    
     Option.iter (
-        MoveParser.FullNotation.toString game.gameState.board >> printfn "\n\nEval : %.2f - Move: %s" eval
+        MoveParser.FullNotation.toString game.gameState.board
+        >> printfn "\n\nEval : %.2f - Move: %s" eval
     ) move
     
     stopWatch.Stop()
