@@ -94,7 +94,7 @@ let play (game: game) =
                 getOpponentMove game opponent file
         file.WriteLine($"{MoveParser.FullNotation.toString game.gameState.board currentMove}")
         game <- Game.Update.makeMove currentMove game
-        Game.print game
+        GameState.print game.gameState
         GameState.toFen game.gameState |> printfn "%s"
     
     file.WriteLine(GameState.toFen game.gameState)
