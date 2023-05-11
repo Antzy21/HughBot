@@ -114,7 +114,8 @@ let newGame () =
 
 let playFromFen (fen : string) =
     {
-        moves = []
         gameState = GameState.Create.fromFen fen
+        fens = Map[];
+        moves = []
     }
     |> play

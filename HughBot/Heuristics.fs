@@ -71,9 +71,9 @@ let private advancedEvaluationOfSquare (board: board) (coords: coordinates) (sqr
             |> (*) value 
         )
 
-let private gameOverEvaluation (turnsUntillGameOver: int) (game: gameState) : float =
-    if Board.isInCheck game.playerTurn game.board then
-        match game.playerTurn with
+let private gameOverEvaluation (turnsUntillGameOver: int) (game: game) : float =
+    if Board.isInCheck game.gameState.playerTurn game.gameState.board then
+        match game.gameState.playerTurn with
         | White -> -1000 + turnsUntillGameOver
         | Black -> 1000 - turnsUntillGameOver
     else
@@ -82,13 +82,13 @@ let private gameOverEvaluation (turnsUntillGameOver: int) (game: gameState) : fl
 
 // The general evaluation wrapper function.
 // Just needs to know how to evaluate each individual square.
-let private staticEvaluationOfGameState (squareEvalFunction: board -> coordinates -> squareBitMap -> float option) (game: gameState) : float =
-    if GameState.getMoves game = List.empty then
+let private staticEvaluationOfGameState (squareEvalFunction: board -> coordinates -> squareBitMap -> float option) (game: game) : float =
+    if GameState.getMoves game.gameState = List.empty then
         gameOverEvaluation 0 game
     else
-        game.board
+        game.gameState.board
         |> Board.foldij (fun coords boardValue sqr ->
-            match advancedEvaluationOfSquare game.board coords sqr with
+            match advancedEvaluationOfSquare game.gameState.board coords sqr with
             | None -> boardValue
             | Some value -> boardValue + value
         ) 0
