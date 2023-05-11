@@ -86,7 +86,7 @@ let play (game: game) =
     let path = $"../../../RecordedGames/{fileName}_{date}.log"
     let file = File.CreateText(path)
 
-    while GameState.isGameOver game.gameState |> not do
+    while Game.isGameOver game |> not do
         let currentMove =
             if game.gameState.playerTurn = botColour then
                 getComputerMove game file
