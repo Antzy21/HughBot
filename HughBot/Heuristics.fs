@@ -9,7 +9,7 @@ let private pieceFlexibilityValue (board: board) (coords: coordinates) : float =
     Board.GetSquares.pieceVision board coords
     |> List.length |> float
 
-let centralityBonusOnLine (i: int) : float =
+let private centralityBonusOnLine (i: int) : float =
     3.5-(abs((float i) - 3.5))
 
 let private centralityBonus (board: board) ((i, j): coordinates) : float =
