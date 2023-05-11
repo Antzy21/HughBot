@@ -43,9 +43,13 @@ let private getUserInputMoveFromList (board) (moves: move list) =
 
 let private getComputerMove (game: game) (file: StreamWriter): move =
     printfn "\nCalculating move...\n"
-    let move, _ =
+    let move =
         try
-            MinMax.evaluation game
+            let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+            let move, eval = MinMax.evaluation game
+            stopWatch.Stop()
+            printfn "Time taken: %.2f" stopWatch.Elapsed.TotalSeconds
+            move
         with
         | ex ->
             Game.print game
@@ -90,7 +94,7 @@ let play (game: game) =
                 getOpponentMove game opponent file
         file.WriteLine($"{MoveParser.FullNotation.toString game.gameState.board currentMove}")
         game <- Game.Update.makeMove currentMove game
-        Game.print game
+        GameState.print game.gameState
         GameState.toFen game.gameState |> printfn "%s"
     
     file.WriteLine(GameState.toFen game.gameState)
