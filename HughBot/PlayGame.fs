@@ -43,9 +43,13 @@ let private getUserInputMoveFromList (board) (moves: move list) =
 
 let private getComputerMove (game: game) (file: StreamWriter): move =
     printfn "\nCalculating move...\n"
-    let move, _ =
+    let move =
         try
-            MinMax.evaluation game
+            let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+            let move, eval = MinMax.evaluation game
+            stopWatch.Stop()
+            printfn "Time taken: %.2f" stopWatch.Elapsed.TotalSeconds
+            move
         with
         | ex ->
             Game.print game

@@ -29,22 +29,10 @@ let private evaluationFunction move gameState = Heuristics.advancedEval gameStat
 let private chessMinMax = Algorithms.minMaxAbPruning getNodesFromParent evaluationFunction
 
 let evaluation (game: game) : move option * float =
-    
-    let stopWatch = System.Diagnostics.Stopwatch.StartNew()
     let depth = 2
     let isMaxing = Colour.toBool game.gameState.playerTurn
     let previousMove = 
         match game.moves with
         | [] -> None
         | lastMove :: _ -> Some lastMove
-    let move, eval = chessMinMax depth isMaxing previousMove game.gameState
-    
-    Option.iter (
-        MoveParser.FullNotation.toString game.gameState.board
-        >> printfn "\n\nEval : %.2f - Move: %s" eval
-    ) move
-    
-    stopWatch.Stop()
-    printfn "Time taken: %.2f" stopWatch.Elapsed.TotalSeconds
-
-    move, eval
+    chessMinMax depth isMaxing previousMove game.gameState
