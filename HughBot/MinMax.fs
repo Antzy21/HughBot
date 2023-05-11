@@ -33,7 +33,7 @@ let private getNodesFromParent (gameState: gameState) =
 
 let private evaluationFunction move gameState = Heuristics.staticEvaluationOfGameState gameState
 
-let private chessMinMax = Algorithms.minMax getNodesFromParent evaluationFunction
+let private chessMinMax = Algorithms.minMaxAbPruning getNodesFromParent evaluationFunction
 
 let evaluation (game: game) : move option * float =
     let stopWatch = System.Diagnostics.Stopwatch.StartNew()
