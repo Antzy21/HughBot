@@ -4,14 +4,10 @@ open Chess
 
 type GameTree =
     | Branches of GameTree list
-    | Node of game
+    | Game of game
+    | Moves of move list
 
 module GameTree =
-
-    let getMoves gametree =  
-        match gametree with
-        | Node g -> GameState.getMoves g.gameState
-        | _ -> failwith ""
 
     let calcAndMove (game: game) =
         GameState.getMoves game.gameState
@@ -19,12 +15,15 @@ module GameTree =
             Game.Update.makeMove move game 
         )
 
-    let rec calcAndMoveRec (depth: int) (game: game) =
+    let rec calcAndMoveRec (depth: int) (finishWithMoves: bool) (game: game) =
         if depth <= 0 then
-            Node game
+            if finishWithMoves then
+                Moves (GameState.getMoves game.gameState)
+            else
+                Game game
         else
             calcAndMove game
-            |> List.map (calcAndMoveRec (depth-1))
+            |> List.map (calcAndMoveRec (depth-1) finishWithMoves)
             |> Branches
     
 [<MemoryDiagnoser>]
@@ -38,16 +37,15 @@ type GameBranchesBenchmarking() =
 
     [<Benchmark>]
     member _.CalculateMovesDepth1AndMakeMove() = 
-        GameTree.calcAndMoveRec 1 game
+        GameTree.calcAndMoveRec 1 false game
         
     [<Benchmark>]
     member _.CalculateMovesDepth2() =
-        GameTree.calcAndMoveRec 1 game
-        |> GameTree.getMoves
+        GameTree.calcAndMoveRec 1 true game
 
     [<Benchmark>]
     member _.CalculateMovesDepth2AndMakeMove() = 
-        GameTree.calcAndMoveRec 2 game
+        GameTree.calcAndMoveRec 2 false game
 
 BenchmarkRunner.Run<GameBranchesBenchmarking> ()
 |> ignore
