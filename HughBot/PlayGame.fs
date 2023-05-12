@@ -1,4 +1,4 @@
-﻿module PlayGame
+﻿module HughBot.PlayGame
 
 open System
 open System.IO

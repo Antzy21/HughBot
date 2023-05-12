@@ -9,7 +9,19 @@
     <Compile Include="Heuristics.fs" />
     <Compile Include="MinMax.fs" />
     <Compile Include="PlayGame.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Benchmarking\GameTree.fs" />
+    <Compile Include="Benchmarking\Benchmarking.fs" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
   </ItemGroup>
 
   <ItemGroup>
