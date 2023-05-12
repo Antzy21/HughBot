@@ -46,6 +46,15 @@ type GameBranchesBenchmarking() =
     [<Benchmark>]
     member _.CalculateGamesDepth2() = 
         GameTree.calcAndMoveRec 2 false game
+    
+[<MemoryDiagnoser>]
+type HeursticsBenchmarking() =
 
-BenchmarkRunner.Run<GameBranchesBenchmarking> ()
+    let game = Game.Create.newGame()
+
+    [<Benchmark>]
+    member _.Eval() =
+        Heuristics.advancedEval game
+
+BenchmarkRunner.Run<HeursticsBenchmarking> ()
 |> ignore
