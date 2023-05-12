@@ -1,4 +1,4 @@
-﻿module Heuristics
+﻿module HughBot.Heuristics
 
 open System
 open Chess
