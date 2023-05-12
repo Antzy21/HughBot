@@ -33,10 +33,10 @@ type GameBranchesBenchmarking() =
 
     [<Benchmark>]
     member _.CalculateMovesDepth1() =
-        GameState.getMoves game.gameState
+        GameTree.calcAndMoveRec 0 true game
 
     [<Benchmark>]
-    member _.CalculateMovesDepth1AndMakeMove() = 
+    member _.CalculateGamesDepth1() = 
         GameTree.calcAndMoveRec 1 false game
         
     [<Benchmark>]
@@ -44,7 +44,7 @@ type GameBranchesBenchmarking() =
         GameTree.calcAndMoveRec 1 true game
 
     [<Benchmark>]
-    member _.CalculateMovesDepth2AndMakeMove() = 
+    member _.CalculateGamesDepth2() = 
         GameTree.calcAndMoveRec 2 false game
 
 BenchmarkRunner.Run<GameBranchesBenchmarking> ()
