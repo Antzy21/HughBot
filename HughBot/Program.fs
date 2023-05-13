@@ -7,13 +7,16 @@ open FSharp.Extensions
 
 printfn "I'm HughBot, a chess engine."
 
-Console.ParseLine "What would you like to do? 'Play'/'p' a game or run 'Benchmarks'/'b'" (fun (userInput: string) ->
+Console.ParseLine "What would you like to do?\n'Play'/'p' a game.\n Run 'Benchmarks'/'b'.\n'Evaluate'/'e' a position." (fun (userInput: string) ->
     match userInput.ToUpper() with
     | "PLAY" | "P" -> 
         PlayGame.newGame ()
         |> Some
     | "BENCHMARKS" | "BENCHMARK" | "BENCH" | "B" -> 
         RunBenchmarks.chooseBenchmarkToRun ()
+    | "EVALUATE" | "EVAL" | "E" ->
+        PlayGame.evaluatePosition ()
+        |> Some
     | _ -> 
         None
 )
