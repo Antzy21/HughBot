@@ -9,20 +9,21 @@ type GameTree =
 
 module GameTree =
 
-    let calcAndMove (game: game) =
-        GameState.getMoves game.gameState
-        |> List.map (fun move ->
-            Game.Update.makeMove move game 
-        )
-
-    let rec calcAndMoveRec (depth: int) (finishWithMoves: bool) (game: game) =
+    let rec private calcAndMoveRec (getMovesFunc: gameState -> move list) (makeMovesFunc)
+        (depth: int) (finishWithMoves: bool) (game: game) =
         if depth <= 0 then
             if finishWithMoves then
-                Moves (GameState.getMoves game.gameState)
+                Moves (getMovesFunc game.gameState)
             else
                 Game game
         else
-            calcAndMove game
-            |> List.map (calcAndMoveRec (depth-1) finishWithMoves)
+            getMovesFunc game.gameState
+            |> List.map (fun move ->
+                makeMovesFunc move game 
+            )
+            |> List.map (calcAndMoveRec getMovesFunc makeMovesFunc (depth-1) finishWithMoves)
             |> Branches
 
+    let asyncBranchChessGameState = calcAndMoveRec GameState.getMovesAsync Game.Update.makeMove
+
+    let branchChessGameState = calcAndMoveRec GameState.getMoves Game.Update.makeMove

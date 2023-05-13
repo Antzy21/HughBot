@@ -93,6 +93,41 @@ let private staticEvaluationOfGameState (squareEvalFunction: board -> coordinate
             | Some value -> boardValue + value
         ) 0
 
+let getComputations (squareEvalFunction) (board) (sqrList) =
+    [
+        for coords in sqrList do
+            async {
+                let value =
+                    let sqr = Board.getSquareFromCoordinates board coords
+                    match squareEvalFunction board coords sqr with
+                    | Some value -> value
+                    | None -> 0.
+                return value
+            }
+    ]
+
+let allCoords =
+    Seq.allPairs [0..7] [0..7]
+    |> Seq.map (fun (x, y) -> struct (x, y))
+
+let private asyncStaticEvalOfGameState (maxParallelism: int)
+    (squareEvalFunction: board -> coordinates -> squareBitMap -> float option)
+    (game: game) : float =
+    if Game.isGameOver game then
+        gameOverEvaluation 0 game
+    else
+        allCoords
+        |> getComputations squareEvalFunction game.gameState.board
+        |> fun comp -> Async.Parallel(comp, maxParallelism)
+        |> Async.StartAsTask
+        |> (fun task ->
+            task.Wait()
+            task.Result
+        )
+        |> Array.reduce (+)
+
 let pieceValueOnlyEval = staticEvaluationOfGameState basicPieceValueEvaluationOfSquare
 
 let advancedEval = staticEvaluationOfGameState advancedEvaluationOfSquare
+
+let asyncAdvancedEval maxParallelism = (asyncStaticEvalOfGameState maxParallelism) advancedEvaluationOfSquare

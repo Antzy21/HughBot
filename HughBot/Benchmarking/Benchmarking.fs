@@ -10,31 +10,43 @@ open BenchmarkDotNet.Running
 type GameBranchesBenchmarking() =
 
     let game = Game.Create.newGame()
+        
+    [<Benchmark(Baseline=true)>]
+    member _.CalculateMovesDepth1() =
+        GameTree.branchChessGameState 0 true game
 
     [<Benchmark>]
-    member _.CalculateMovesDepth1() =
-        GameTree.calcAndMoveRec 0 true game
+    member _.CalculateMovesDepth1Async() =
+        GameTree.asyncBranchChessGameState 0 true game
 
     [<Benchmark>]
     member _.CalculateGamesDepth1() = 
-        GameTree.calcAndMoveRec 1 false game
-        
-    [<Benchmark>]
-    member _.CalculateMovesDepth2() =
-        GameTree.calcAndMoveRec 1 true game
+        GameTree.branchChessGameState 1 false game
 
     [<Benchmark>]
-    member _.CalculateGamesDepth2() = 
-        GameTree.calcAndMoveRec 2 false game
+    member _.CalculateGamesDepth1Async() =
+        GameTree.asyncBranchChessGameState 1 false game
     
 [<MemoryDiagnoser>]
 type HeursticsBenchmarking() =
 
     let game = Game.Create.newGame()
 
-    [<Benchmark>]
+    [<Benchmark(Baseline=true)>]
     member _.Eval() =
         Heuristics.advancedEval game
+        
+    [<Benchmark>]
+    member _.AsyncEval4() =
+        Heuristics.asyncAdvancedEval 4 game
+        
+    //[<Benchmark>]
+    //member _.AsyncEval16() =
+    //    Heuristics.asyncAdvancedEval 16 game
+        
+    //[<Benchmark>]
+    //member _.AsyncEval64() =
+    //    Heuristics.asyncAdvancedEval 64 game
 
 module RunBenchmarks =
 
