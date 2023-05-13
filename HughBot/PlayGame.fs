@@ -117,4 +117,24 @@ let playFromFen (fen : string) =
         fens = Map[];
         moves = []
     }
-    |> play
+    |> play    
+
+let evaluatePosition () =
+    let game = 
+        Console.ParseLine "Enter Fen of game to evaluate" (fun (userInputFen: string) -> 
+            try
+                userInputFen
+                |> Game.Create.fromFen
+                |> Some
+            with
+            | _ -> None
+        )
+    let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+    Game.print game
+
+    printfn "\nCalculating move...\n"
+
+    let move, eval = MinMax.evaluation game
+    stopWatch.Stop()
+    printfn "Time taken: %.2f" stopWatch.Elapsed.TotalSeconds
+    printfn $"{move}\n{eval}"
