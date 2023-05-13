@@ -68,16 +68,15 @@ let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWrite
         |> Option.defaultWith (fun () -> getUserInputMoveFromList game.gameState.board moves)
 
 let play (game: game) =
-    
+    printfn "Let's play!"
     let mutable game = game
-    printfn "I'm HughBot, a chess engine. Let's play!"
     let opponent = getUserInputForOpponent ()
     let botColour = 
         match opponent with
         | Computer -> White
         | _ -> Console.ParseLine "Please select White or Black for me to play" Colour.tryParse 
     
-    let date = System.DateTime.Now.ToString("ddMMyyyy")
+    let date = System.DateTime.Now.ToString("yyyyMMdd")
     let fileName = 
         match opponent with
         | Human name -> $"Hughbot({botColour |> Colour.toChar})vs({botColour |> Colour.opposite |> Colour.toChar}){name}"

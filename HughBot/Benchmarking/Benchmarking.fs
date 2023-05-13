@@ -3,7 +3,9 @@
 open BenchmarkDotNet.Attributes
 open Chess
 open HughBot
-    
+open FSharp.Extensions
+open BenchmarkDotNet.Running
+
 [<MemoryDiagnoser>]
 type GameBranchesBenchmarking() =
 
@@ -33,3 +35,18 @@ type HeursticsBenchmarking() =
     [<Benchmark>]
     member _.Eval() =
         Heuristics.advancedEval game
+
+module RunBenchmarks =
+
+    let chooseBenchmarkToRun () =
+        Console.ParseLineWithBreakOption "Which Benchmark do you want to run?\n BRANCHES\n HEURISTICS" (fun (userInput: string) ->
+            match userInput.ToUpper() with
+            | "BRANCHES" | "B" ->
+                BenchmarkRunner.Run<GameBranchesBenchmarking>()
+                |> Some 
+            | "HEURISTICS" | "H" ->
+                BenchmarkRunner.Run<HeursticsBenchmarking>()
+                |> Some 
+            | _ -> None
+            |> Option.map (ignore)
+        )
