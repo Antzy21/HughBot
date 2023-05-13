@@ -68,9 +68,8 @@ let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWrite
         |> Option.defaultWith (fun () -> getUserInputMoveFromList game.gameState.board moves)
 
 let play (game: game) =
-    
+    printfn "Let's play!"
     let mutable game = game
-    printfn "I'm HughBot, a chess engine. Let's play!"
     let opponent = getUserInputForOpponent ()
     let botColour = 
         match opponent with
