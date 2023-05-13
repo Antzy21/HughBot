@@ -67,7 +67,7 @@ let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWrite
         getUserInputMoveFromNotation game.gameState moves
         |> Option.defaultWith (fun () -> getUserInputMoveFromList game.gameState.board moves)
 
-let play (game: game) =
+let private play (game: game) =
     printfn "Let's play!"
     let mutable game = game
     let opponent = getUserInputForOpponent ()
