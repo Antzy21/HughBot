@@ -31,11 +31,4 @@ let private chessMinMax = Algorithms.minMaxAbPruning getNodesFromParent evaluati
 let evaluation (game: game) : move option * float =
     let depth = 3
     let isMaxing = Colour.toBool game.gameState.playerTurn
-    let previousMove = 
-        match game.moves with
-        | [] -> None
-        | lastMove :: _ -> 
-            lastMove
-            |> MoveParser.parse game.gameState.playerTurn game.gameState.board 
-            |> Some
-    chessMinMax depth isMaxing previousMove game
+    chessMinMax depth isMaxing None game
