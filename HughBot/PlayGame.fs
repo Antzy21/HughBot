@@ -77,7 +77,7 @@ let play (game: game) =
         | Computer -> White
         | _ -> Console.ParseLine "Please select White or Black for me to play" Colour.tryParse 
     
-    let date = System.DateTime.Now.ToString("ddMMyyyy")
+    let date = System.DateTime.Now.ToString("yyyyMMdd")
     let fileName = 
         match opponent with
         | Human name -> $"Hughbot({botColour |> Colour.toChar})vs({botColour |> Colour.opposite |> Colour.toChar}){name}"
