@@ -67,7 +67,7 @@ let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWrite
         getUserInputMoveFromNotation game.gameState moves
         |> Option.defaultWith (fun () -> getUserInputMoveFromList game.gameState.board moves)
 
-let play (game: game) =
+let private play (game: game) =
     printfn "Let's play!"
     let mutable game = game
     let opponent = getUserInputForOpponent ()
@@ -117,4 +117,24 @@ let playFromFen (fen : string) =
         fens = Map[];
         moves = []
     }
-    |> play
+    |> play    
+
+let evaluatePosition () =
+    let game = 
+        Console.ParseLine "Enter Fen of game to evaluate" (fun (userInputFen: string) -> 
+            try
+                userInputFen
+                |> Game.Create.fromFen
+                |> Some
+            with
+            | _ -> None
+        )
+    let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+    Game.print game
+
+    printfn "\nCalculating move...\n"
+
+    let move, eval = MinMax.evaluation game
+    stopWatch.Stop()
+    printfn "Time taken: %.2f" stopWatch.Elapsed.TotalSeconds
+    printfn $"{move}\n{eval}"

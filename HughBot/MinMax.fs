@@ -5,7 +5,7 @@ open SearchAlgorithms
 
 /// From a given game, get the moves available and calculate the heuristic value if the move is applied.
 let private getMovesAndNewGameStates (game: game) : (move * game) list =
-    GameState.getMoves game.gameState
+    GameState.getMovesAsync game.gameState
     |> List.map (fun move ->
         let newGs = Game.Update.makeMove move game
         move, newGs
@@ -34,5 +34,8 @@ let evaluation (game: game) : move option * float =
     let previousMove = 
         match game.moves with
         | [] -> None
-        | lastMove :: _ -> Some lastMove
+        | lastMove :: _ -> 
+            lastMove
+            |> MoveParser.parse game.gameState.playerTurn game.gameState.board 
+            |> Some
     chessMinMax depth isMaxing previousMove game
