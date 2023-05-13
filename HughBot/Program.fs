@@ -17,7 +17,3 @@ Console.ParseLine "What would you like to do? 'Play'/'p' a game or run 'Benchmar
     | _ -> 
         None
 )
-
-// Run benchmarks
-BenchmarkRunner.Run<HeursticsBenchmarking> ()
-|> ignore
