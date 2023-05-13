@@ -34,5 +34,8 @@ let evaluation (game: game) : move option * float =
     let previousMove = 
         match game.moves with
         | [] -> None
-        | lastMove :: _ -> Some lastMove
+        | lastMove :: _ -> 
+            lastMove
+            |> MoveParser.parse game.gameState.playerTurn game.gameState.board 
+            |> Some
     chessMinMax depth isMaxing previousMove game
