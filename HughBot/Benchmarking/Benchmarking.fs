@@ -32,9 +32,21 @@ type HeursticsBenchmarking() =
 
     let game = Game.Create.newGame()
 
-    [<Benchmark>]
+    [<Benchmark(Baseline=true)>]
     member _.Eval() =
         Heuristics.advancedEval game
+        
+    [<Benchmark>]
+    member _.AsyncEval4() =
+        Heuristics.asyncAdvancedEval 4 game
+        
+    //[<Benchmark>]
+    //member _.AsyncEval16() =
+    //    Heuristics.asyncAdvancedEval 16 game
+        
+    //[<Benchmark>]
+    //member _.AsyncEval64() =
+    //    Heuristics.asyncAdvancedEval 64 game
 
 module RunBenchmarks =
 
