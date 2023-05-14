@@ -20,22 +20,18 @@ let private orderMovesAndGsByStaticEval (isMaxing: bool) : (move * game) list ->
     else
         List.sortBy
 
-let private getNodesFromParent (game: game) =
+let private getNodesFromParent (orderByEval: bool) (game: game) =
     getMovesAndNewGameStates game
-    //|> orderMovesAndGsByStaticEval (Colour.toBool gameState.playerTurn)
+    |> if orderByEval then
+            orderMovesAndGsByStaticEval (Colour.toBool game.gameState.playerTurn)
+        else
+            id
 
 let private evaluationFunction move game = Heuristics.advancedEval game
 
-let private chessMinMax = Algorithms.minMaxAbPruning getNodesFromParent evaluationFunction
+let private chessMinMax = Algorithms.minMaxAbPruning (getNodesFromParent false) evaluationFunction
 
 let evaluation (game: game) : move option * float =
     let depth = 3
     let isMaxing = Colour.toBool game.gameState.playerTurn
-    let previousMove = 
-        match game.moves with
-        | [] -> None
-        | lastMove :: _ -> 
-            lastMove
-            |> MoveParser.parse game.gameState.playerTurn game.gameState.board 
-            |> Some
-    chessMinMax depth isMaxing previousMove game
+    chessMinMax depth isMaxing None game
