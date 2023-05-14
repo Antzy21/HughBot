@@ -48,7 +48,8 @@ let private getComputerMove (game: game) (file: StreamWriter): move =
             let stopWatch = System.Diagnostics.Stopwatch.StartNew()
             let move, eval = MinMax.evaluation game
             stopWatch.Stop()
-            printfn "Time taken: %.2f" stopWatch.Elapsed.TotalSeconds
+            Option.iter (MoveParser.AlgebraicNotation.print game.gameState.board) move
+            printfn "\nTime taken: %.2f" stopWatch.Elapsed.TotalSeconds
             move
         with
         | ex ->
