@@ -43,22 +43,21 @@ let private getUserInputMoveFromList (board) (moves: move list) =
 
 let private getComputerMove (game: game) (file: StreamWriter): move =
     printfn "\nCalculating move...\n"
-    let move =
-        try
-            let stopWatch = System.Diagnostics.Stopwatch.StartNew()
-            let move, eval = MinMax.evaluation game
-            stopWatch.Stop()
-            Option.iter (MoveParser.AlgebraicNotation.print game.gameState.board) move
-            printfn "\nTime taken: %.2f" stopWatch.Elapsed.TotalSeconds
-            move
-        with
-        | ex ->
-            Game.print game
-            file.WriteLine($"{ex}")
-            file.WriteLine($"{GameState.toFen game.gameState}")
-            file.Close()
-            failwith $"{ex}" 
-    move |> Option.get
+    try
+        let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+        let oMove, eval = MinMax.evaluation game
+        stopWatch.Stop()
+        let move = Option.get oMove
+        MoveParser.AlgebraicNotation.toString move game.gameState.board |> (printf "%s")
+        printfn "\nTime taken: %.2f" stopWatch.Elapsed.TotalSeconds
+        move
+    with
+    | ex ->
+        Game.print game
+        file.WriteLine($"{ex}")
+        file.WriteLine($"{GameState.toFen game.gameState}")
+        file.Close()
+        failwith $"{ex}"
 
 let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWriter): move =
     match opponent with
@@ -118,7 +117,7 @@ let playFromFen (fen : string) =
         fens = Map[];
         moves = []
     }
-    |> play    
+    |> play
 
 let evaluatePosition () =
     let game = 
