@@ -27,6 +27,7 @@ let private getUserInputForOpponent () : Opponent =
 let private getUserInputMoveFromNotation (game: gameState) (moves: move list) : move option =
     Console.ParseLineWithBreakOption "Please enter move" (fun (notation: string) ->
         MoveParser.tryParse game.playerTurn game.board notation
+        |> Result.toOption
     )
     
 let private getUserInputMoveFromList (board) (moves: move list) =
