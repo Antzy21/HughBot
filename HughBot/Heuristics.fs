@@ -1,12 +1,11 @@
 ﻿module HughBot.Heuristics
 
-open System
 open Chess
 open Checkerboard
 open FSharp.Extensions
     
 let private pieceFlexibilityValue (board: board) (coords: coordinates) : float =
-    Board.GetSquares.pieceVision board coords
+    Board.Vision.ofPieceAtCoords board coords
     |> List.length |> float
 
 let private centralityBonusOnLine (i: int) : float =

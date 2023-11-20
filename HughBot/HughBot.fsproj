@@ -21,12 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Antzy21.Games.SearchAlgorithms" Version="1.0.0" />
     <PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\FunctionalChess\ChessModule\ChessModule.fsproj" />
-    <ProjectReference Include="..\..\SearchAlgorithms\SearchAlgorithms\SearchAlgorithms.fsproj" />
   </ItemGroup>
 
 </Project>
