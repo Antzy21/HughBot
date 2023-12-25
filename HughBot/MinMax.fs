@@ -5,7 +5,7 @@ open SearchAlgorithms
 
 /// From a given game, get the moves available and calculate the heuristic value if the move is applied.
 let private getMovesAndNewGameStates (game: game) : (move * game) list =
-    GameState.getMovesAsync game.gameState
+    GameState.getMoves game.gameState
     |> List.map (fun move ->
         let newGs = Game.Update.makeMove move game
         move, newGs

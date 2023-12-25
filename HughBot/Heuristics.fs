@@ -6,15 +6,24 @@ open FSharp.Extensions
     
 let private pieceFlexibilityValue (board: board) (coords: coordinates) : float =
     Board.Vision.ofPieceAtCoords board coords
+    |> Result.failOnError
     |> List.length |> float
 
 let private centralityBonusOnLine (i: int) : float =
     3.5-(abs((float i) - 3.5))
 
-let private centralityBonus (board: board) ((i, j): coordinates) : float =
-    centralityBonusOnLine i + centralityBonusOnLine j
+let private centralityBonus (board: board) (c: coordinates) : float =
+    let fileBonus = 
+        Coordinates.getFile c
+        |> centralityBonusOnLine 
+    let rowBonus = 
+        Coordinates.getRow c
+        |> centralityBonusOnLine
+    fileBonus + rowBonus
 
-let private pawnAdvanceValue (piece: piece) ((i,j): coordinates) : float =
+let private pawnAdvanceValue (piece: piece) (c: coordinates) : float =
+    let i = Coordinates.getFile c
+    let j = Coordinates.getRow c
     let centralityBonus = centralityBonusOnLine i
     match piece.colour with
     | White -> 
@@ -43,8 +52,8 @@ let private calculateFlexValue (piece: piece) (board: board) (coords: coordinate
         | Pawn -> pawnAdvanceValue piece coords |> (*) 0.005 |> Some
         | King -> None
 
-let private basicPieceValueEvaluationOfSquare (board: board) (coords: coordinates) (sqr: squareBitMap) : float option =
-    match Square.Parser.fromBitMaps sqr with
+let private basicPieceValueEvaluationOfSquare (board: board) (coords: coordinates) (sqr: square) : float option =
+    match sqr with
     | None -> None
     | Some piece ->
         let baseValue = Piece.getValue piece |> Option.map float
@@ -56,8 +65,8 @@ let private basicPieceValueEvaluationOfSquare (board: board) (coords: coordinate
             |> (*) value 
         )
 
-let private advancedEvaluationOfSquare (board: board) (coords: coordinates) (sqr: squareBitMap) : float option =
-    match Square.Parser.fromBitMaps sqr with
+let private advancedEvaluationOfSquare (board: board) (coords: coordinates) (sqr: square) : float option =
+    match sqr with
     | None -> None
     | Some piece ->
         let baseValue = Piece.getValue piece |> Option.map float
@@ -81,12 +90,12 @@ let private gameOverEvaluation (turnsUntillGameOver: int) (game: game) : float =
 
 // The general evaluation wrapper function.
 // Just needs to know how to evaluate each individual square.
-let private staticEvaluationOfGameState (squareEvalFunction: board -> coordinates -> squareBitMap -> float option) (game: game) : float =
+let private staticEvaluationOfGameState (squareEvalFunction: board -> coordinates -> square -> float option) (game: game) : float =
     if Game.isGameOver game then
         gameOverEvaluation 0 game
     else
         game.gameState.board
-        |> Board.foldij (fun coords boardValue sqr ->
+        |> Board.foldjiback (fun coords boardValue sqr ->
             match advancedEvaluationOfSquare game.gameState.board coords sqr with
             | None -> boardValue
             | Some value -> boardValue + value
@@ -107,10 +116,13 @@ let getComputations (squareEvalFunction) (board) (sqrList) =
 
 let allCoords =
     Seq.allPairs [0..7] [0..7]
-    |> Seq.map (fun (x, y) -> struct (x, y))
+    |> Seq.map (fun (x, y) -> 
+        Coordinates.construct x y
+        |> Result.failOnError
+    )
 
 let private asyncStaticEvalOfGameState (maxParallelism: int)
-    (squareEvalFunction: board -> coordinates -> squareBitMap -> float option)
+    (squareEvalFunction: board -> coordinates -> square -> float option)
     (game: game) : float =
     if Game.isGameOver game then
         gameOverEvaluation 0 game
