@@ -361,4 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Recorded games
 /HughBot/RecordedGames
+
+# JetBrains
+.idea/*
