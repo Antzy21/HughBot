@@ -16,6 +16,10 @@ let main argv =
     depthOption.AddAlias("-d")
     depthOption.SetDefaultValue(3)
     
+    let orderedEvaluationOption = Option<bool> "--orderedEval"
+    orderedEvaluationOption.AddAlias("-e")
+    orderedEvaluationOption.SetDefaultValue false
+    
     let benchmarkCommand = Command "benchmark"
     benchmarkCommand.AddAlias("bench")
     let benchmarkArg =
@@ -28,10 +32,12 @@ let main argv =
     evaluateCommand.AddAlias("eval")
     let fenArgument = Argument<string>("fenArg", "The chess game state, represented as a Fen")
     evaluateCommand.AddArgument(fenArgument)
+    evaluateCommand.AddOption(depthOption)
     evaluateCommand.SetHandler(PlayGame.evaluatePosition, fenArgument, depthOption)
 
     let rootCommand = RootCommand "HughBot"
     rootCommand.AddOption(depthOption)
+    rootCommand.AddOption(orderedEvaluationOption)
     let colourOption =
         Option<string>("--colour")
             .FromAmong("White", "Black")
@@ -45,7 +51,7 @@ let main argv =
     fenOption.AddAlias("-f")
     rootCommand.AddOption(fenOption)
     
-    rootCommand.SetHandler(PlayGame.play, fenOption, depthOption, colourOption, opponentOption)
+    rootCommand.SetHandler(PlayGame.play, fenOption, depthOption, colourOption, opponentOption, orderedEvaluationOption)
     rootCommand.AddCommand benchmarkCommand
     rootCommand.AddCommand evaluateCommand
 

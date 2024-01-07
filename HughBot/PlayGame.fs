@@ -7,10 +7,8 @@ open Chess
 
 type Computer =
     {
-        depth: int;
+        evaluationFunction: game -> move option * float;
     }
-    member this.getMoveAndEval (game: game) : move option * float =
-        MinMax.evaluation game this.depth
 
 type PlayerType =
     | Human
@@ -40,7 +38,7 @@ type Player =
         let stopWatch = System.Diagnostics.Stopwatch.StartNew()
         let move =
             match this.playerType with
-            | Computer c -> c.getMoveAndEval game |> fst |> Option.get
+            | Computer c -> c.evaluationFunction game |> fst |> Option.get
             | Human ->
                 getUserInputMoveFromNotation game.gameState
                 |> Option.defaultWith (fun () ->
@@ -51,12 +49,12 @@ type Player =
         printfn $"\nTime taken: %.2f{stopWatch.Elapsed.TotalSeconds}"
         move
 
-let play (fenOption: string) (depth: int) (colourString: string) (opponentString: string) =
+let play (fenOption: string) (depth: int) (colourString: string) (opponentString: string) (orderedEvaluation: bool) =
     printfn "Let's play!"
 
     let colour = Colour.tryParse colourString |> Option.get
     
-    let hughbotComputer = Computer { depth = depth }    
+    let hughbotComputer = Computer { evaluationFunction = MinMax.evaluation depth orderedEvaluation }    
     let hughbot = { name = "HughBot"; playerType = hughbotComputer; colour = colour }
             
     let opponent =
@@ -108,8 +106,8 @@ let evaluatePosition (fen: string) (depth: int) =
         Game.print game
         printfn "\nCalculating move...\n"
             
-        let hughbotComputer = { depth = depth }
-        let moveOption, eval = hughbotComputer.getMoveAndEval game
+        let hughbotComputer = { evaluationFunction = MinMax.evaluation depth false }   
+        let moveOption, eval = hughbotComputer.evaluationFunction game
         
         stopWatch.Stop()
         printfn $"Time taken: %.2f{stopWatch.Elapsed.TotalSeconds}"

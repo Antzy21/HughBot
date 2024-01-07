@@ -29,8 +29,8 @@ let private getNodesFromParent (orderByEval: bool) (game: game) =
 
 let private evaluationFunction move game = Heuristics.advancedEval game
 
-let private chessMinMax = Algorithms.minMaxAbPruning (getNodesFromParent false) evaluationFunction
+let private chessMinMax orderByEval = Algorithms.minMaxAbPruning (getNodesFromParent orderByEval) evaluationFunction
 
-let evaluation (game: game) (depth: int) : move option * float =
+let evaluation (depth: int) (orderByEval: bool) (game: game) : move option * float =
     let isMaxing = Colour.toBool game.gameState.playerTurn
-    chessMinMax depth isMaxing None game
+    chessMinMax orderByEval depth isMaxing None game
