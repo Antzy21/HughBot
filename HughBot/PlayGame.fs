@@ -5,33 +5,25 @@ open System.IO
 open FSharp.Extensions
 open Chess
 
-type Opponent =
-    | Test
-    | Human of string
-    | Computer
+type Computer =
+    {
+        depth: int;
+    }
+    member this.getMoveAndEval (game: game) : move option * float =
+        MinMax.evaluation game this.depth
 
-let private getUserInputForOpponent () : Opponent =
-    Console.ParseLine "Who am I playing against? Leave blank to test, or 'HughBot'/'HB' to play myself!" (fun (oppString: string) ->
-        match oppString.ToUpper() with
-        | "HUGHBOT" | "HB" -> 
-            Console.WriteLine "I will play against myself!"
-            Some Computer
-        | "" -> 
-            Console.WriteLine "Test game."
-            Some Test
-        | _ -> 
-            Console.WriteLine $"Good luck {oppString}!"
-            Some (Human oppString)
-    )
+type PlayerType =
+    | Human
+    | Computer of Computer
 
-let private getUserInputMoveFromNotation (game: gameState) (moves: move list) : move option =
+let private getUserInputMoveFromNotation (game: gameState) : move option =
     Console.ParseLineWithBreakOption "Please enter move" (fun (notation: string) ->
         MoveParser.tryParse game.playerTurn game.board notation
         |> Result.toOption
     )
-    
-let private getUserInputMoveFromList (board) (moves: move list) =
-    moves |> List.iteri (fun i m -> printfn $"({i}) {MoveParser.FullNotation.toString board m}")
+let private getUserInputMoveFromList (game: game) =
+    let moves = GameState.getMoves game.gameState
+    moves |> List.iteri (fun i m -> printfn $"({i}) {MoveParser.FullNotation.toString game.gameState.board m}")
     Console.ParseLine "Please enter a valid move #" (fun (v: string) ->
         Int.tryParse v
         |> Option.bind (fun i ->
@@ -42,61 +34,60 @@ let private getUserInputMoveFromList (board) (moves: move list) =
         )
     )
 
-let private getComputerMove (game: game) (file: StreamWriter): move =
-    printfn "\nCalculating move...\n"
-    try
+type Player =
+    {name: string; playerType: PlayerType; colour: colour}
+    member this.getMove (game: game) : move =
         let stopWatch = System.Diagnostics.Stopwatch.StartNew()
-        let oMove, eval = MinMax.evaluation game
+        let move =
+            match this.playerType with
+            | Computer c -> c.getMoveAndEval game |> fst |> Option.get
+            | Human ->
+                getUserInputMoveFromNotation game.gameState
+                |> Option.defaultWith (fun () ->
+                    getUserInputMoveFromList game
+                )
         stopWatch.Stop()
-        let move = Option.get oMove
         MoveParser.AlgebraicNotation.toString move game.gameState.board |> (printf "%s")
         printfn $"\nTime taken: %.2f{stopWatch.Elapsed.TotalSeconds}"
         move
-    with
-    | ex ->
-        Game.print game
-        file.WriteLine($"{ex}")
-        file.WriteLine($"{GameState.toFen game.gameState}")
-        file.Close()
-        failwith $"{ex}"
 
-let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWriter): move =
-    match opponent with
-    | Computer -> getComputerMove game file
-    | _ ->
-        let moves = GameState.getMoves game.gameState
-        getUserInputMoveFromNotation game.gameState moves
-        |> Option.defaultWith (fun () -> getUserInputMoveFromList game.gameState.board moves)
-
-let play (fenOption: string) (depth: int) =
+let play (fenOption: string) (depth: int) (colourString: string) (opponentString: string) =
     printfn "Let's play!"
-    let mutable game =
-        match fenOption with
-        | null ->
-            Game.Create.newGame ()
-        | fen ->
-            Game.Create.fromFen fen
-    let opponent = getUserInputForOpponent ()
-    let botColour = 
-        match opponent with
-        | Computer -> White
-        | _ -> Console.ParseLine "Please select White or Black for me to play" Colour.tryParse 
+
+    let colour = Colour.tryParse colourString |> Option.get
     
+    let hughbotComputer = Computer { depth = depth }    
+    let hughbot = { name = "HughBot"; playerType = hughbotComputer; colour = colour }
+            
+    let opponent =
+        match opponentString with
+        | null -> 
+            Console.WriteLine "I will play against myself!"
+            { name = "HughBot"; playerType = hughbotComputer; colour = Colour.opposite colour }
+        | opponent -> 
+            Console.WriteLine $"Good luck {opponent}!"
+            { name = opponent; playerType = Human; colour = Colour.opposite colour } 
+                
     let date = DateTime.Now.ToString("yyyyMMdd")
     let fileName = 
-        match opponent with
-        | Human name -> $"HughBot({botColour |> Colour.toChar})vs({botColour |> Colour.opposite |> Colour.toChar}){name}"
-        | Computer -> "SelfPlay"
-        | Test -> ""
-    let path = $"../../../RecordedGames/{fileName}_{date}.log"
+        $"HughBot({Colour.toChar hughbot.colour})vs({Colour.toChar opponent.colour}){opponent.name}"
+    let dir = $"{Environment.SpecialFolder.LocalApplicationData}/Antzy21/HughBot/RecordedGames"
+    Directory.CreateDirectory(dir) |> ignore
+    let path = $"{dir}/{fileName}_{date}.log"
     let file = File.CreateText(path)
 
+    let mutable game =
+        match fenOption with
+        | null -> Game.Create.newGame ()
+        | fen -> Game.Create.fromFen fen
+    
     while Game.isGameOver game |> not do
         let currentMove =
-            if game.gameState.playerTurn = botColour then
-                getComputerMove game file
+            if game.gameState.playerTurn = hughbot.colour then
+                hughbot.getMove game
             else
-                getOpponentMove game opponent file
+                opponent.getMove game
+                
         file.WriteLine($"{MoveParser.FullNotation.toString game.gameState.board currentMove}")
         game <- Game.Update.makeMove currentMove game
         GameState.print game.gameState
@@ -110,17 +101,15 @@ let play (fenOption: string) (depth: int) =
 
     printfn "\nGood game!"
 
-    if opponent = Test then
-        File.Delete path
-
-let evaluatePosition (fen: string) =
+let evaluatePosition (fen: string) (depth: int) =
     try
         let game = Game.Create.fromFen fen
         let stopWatch = System.Diagnostics.Stopwatch.StartNew()
         Game.print game
         printfn "\nCalculating move...\n"
-        
-        let move, eval = MinMax.evaluation game
+            
+        let hughbotComputer = { depth = depth }
+        let move, eval = hughbotComputer.getMoveAndEval game
         
         stopWatch.Stop()
         printfn $"Time taken: %.2f{stopWatch.Elapsed.TotalSeconds}"

@@ -1,4 +1,5 @@
 ﻿open System.Threading.Tasks
+open Chess
 open HughBot
 open HughBot.Benchmarking
 open System
@@ -10,6 +11,10 @@ let main argv =
     
     Console.OutputEncoding <- System.Text.Encoding.Unicode
     printfn "I'm HughBot, a chess engine."
+    
+    let depthOption = Option<int> "--depth"
+    depthOption.AddAlias("-d")
+    depthOption.SetDefaultValue(3)
     
     let benchmarkCommand = Command "benchmark"
     benchmarkCommand.AddAlias("bench")
@@ -23,18 +28,24 @@ let main argv =
     evaluateCommand.AddAlias("eval")
     let fenArgument = Argument<string>("fenArg", "The chess game state, represented as a Fen")
     evaluateCommand.AddArgument(fenArgument)
-    evaluateCommand.SetHandler(PlayGame.evaluatePosition, fenArgument)
+    evaluateCommand.SetHandler(PlayGame.evaluatePosition, fenArgument, depthOption)
 
     let rootCommand = RootCommand "HughBot"
-    let depthOption = Option<int> "--depth"
-    depthOption.AddAlias("-d")
-    depthOption.SetDefaultValue(3)
     rootCommand.AddOption(depthOption)
+    let colourOption =
+        Option<string>("--colour")
+            .FromAmong("White", "Black")
+    colourOption.AddAlias("-c")
+    colourOption.SetDefaultValue("White")
+    rootCommand.AddOption(colourOption)
+    let opponentOption = Option<string> "--opponent"
+    opponentOption.AddAlias("-o")
+    rootCommand.AddOption(opponentOption)
     let fenOption = Option<string> "--fen"
     fenOption.AddAlias("-f")
     rootCommand.AddOption(fenOption)
-    rootCommand.SetHandler(PlayGame.play, fenOption, depthOption)
     
+    rootCommand.SetHandler(PlayGame.play, fenOption, depthOption, colourOption, opponentOption)
     rootCommand.AddCommand benchmarkCommand
     rootCommand.AddCommand evaluateCommand
 
