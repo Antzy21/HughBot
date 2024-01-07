@@ -23,6 +23,7 @@
   <ItemGroup>
     <PackageReference Include="Antzy21.Games.SearchAlgorithms" Version="1.0.0" />
     <PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
   <ItemGroup>

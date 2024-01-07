@@ -1,24 +1,41 @@
-﻿open HughBot
+﻿open System.Threading.Tasks
+open HughBot
 open HughBot.Benchmarking
-open FSharp.Extensions
 open System
+open System.CommandLine
+open System.CommandLine.Invocation
 
-//PlayGame.newGame ()
+[<EntryPoint>]
+let main argv =
+    
+    Console.OutputEncoding <- System.Text.Encoding.Unicode
+    printfn "I'm HughBot, a chess engine."
+    
+    let benchmarkCommand = Command "benchmark"
+    benchmarkCommand.AddAlias("bench")
+    let benchmarkArg =
+        Argument<string>("type", "Benchmark type to run")
+            .FromAmong([|"BRANCHES"; "HEURISTICS"|])
+    benchmarkCommand.AddArgument(benchmarkArg)
+    benchmarkCommand.SetHandler(RunBenchmarks.RunBenchmark, benchmarkArg)
 
-printfn "I'm HughBot, a chess engine."
+    let evaluateCommand = Command "evaluate"
+    evaluateCommand.AddAlias("eval")
+    let fenArgument = Argument<string>("fenArg", "The chess game state, represented as a Fen")
+    evaluateCommand.AddArgument(fenArgument)
+    evaluateCommand.SetHandler(PlayGame.evaluatePosition, fenArgument)
 
-Console.OutputEncoding <- System.Text.Encoding.Unicode
+    let rootCommand = RootCommand "HughBot"
+    let depthOption = Option<int> "--depth"
+    depthOption.AddAlias("-d")
+    depthOption.SetDefaultValue(3)
+    rootCommand.AddOption(depthOption)
+    let fenOption = Option<string> "--fen"
+    fenOption.AddAlias("-f")
+    rootCommand.AddOption(fenOption)
+    rootCommand.SetHandler(PlayGame.play, fenOption, depthOption)
+    
+    rootCommand.AddCommand benchmarkCommand
+    rootCommand.AddCommand evaluateCommand
 
-Console.ParseLine "What would you like to do?\n'Play'/'p' a game.\n Run 'Benchmarks'/'b'.\n'Evaluate'/'e' a position." (fun (userInput: string) ->
-    match userInput.ToUpper() with
-    | "PLAY" | "P" -> 
-        PlayGame.newGame ()
-        |> Some
-    | "BENCHMARKS" | "BENCHMARK" | "BENCH" | "B" -> 
-        RunBenchmarks.chooseBenchmarkToRun ()
-    | "EVALUATE" | "EVAL" | "E" ->
-        PlayGame.evaluatePosition ()
-        |> Some
-    | _ -> 
-        None
-)
+    rootCommand.Invoke argv

@@ -7,6 +7,7 @@ open FSharp.Extensions
 let private pieceFlexibilityValue (board: board) (coords: coordinates) : float =
     Board.Vision.ofPieceAtCoords board coords
     |> Result.failOnError
+    |> BitMap.isolateValues
     |> List.length |> float
 
 let private centralityBonusOnLine (i: int) : float =
@@ -79,11 +80,11 @@ let private advancedEvaluationOfSquare (board: board) (coords: coordinates) (sqr
             |> (*) value 
         )
 
-let private gameOverEvaluation (turnsUntillGameOver: int) (game: game) : float =
+let private gameOverEvaluation (turnsUntilGameOver: int) (game: game) : float =
     if Board.isInCheck game.gameState.playerTurn game.gameState.board then
         match game.gameState.playerTurn with
-        | White -> -1000 + turnsUntillGameOver
-        | Black -> 1000 - turnsUntillGameOver
+        | White -> -1000 + turnsUntilGameOver
+        | Black -> 1000 - turnsUntilGameOver
     else
         0
     |> float
@@ -114,7 +115,7 @@ let getComputations (squareEvalFunction) (board) (sqrList) =
             }
     ]
 
-let allCoords =
+let private allCoords =
     Seq.allPairs [0..7] [0..7]
     |> Seq.map (fun (x, y) -> 
         Coordinates.construct x y

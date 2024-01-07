@@ -28,7 +28,7 @@ type GameBranchesBenchmarking() =
         GameTree.asyncBranchChessGameState 1 false game
     
 [<MemoryDiagnoser>]
-type HeursticsBenchmarking() =
+type HeuristicsBenchmarking() =
 
     let game = Game.Create.newGame()
 
@@ -50,15 +50,12 @@ type HeursticsBenchmarking() =
 
 module RunBenchmarks =
 
-    let chooseBenchmarkToRun () =
-        Console.ParseLineWithBreakOption "Which Benchmark do you want to run?\n BRANCHES\n HEURISTICS" (fun (userInput: string) ->
-            match userInput.ToUpper() with
-            | "BRANCHES" | "B" ->
-                BenchmarkRunner.Run<GameBranchesBenchmarking>()
-                |> Some 
-            | "HEURISTICS" | "H" ->
-                BenchmarkRunner.Run<HeursticsBenchmarking>()
-                |> Some 
-            | _ -> None
-            |> Option.map (ignore)
-        )
+    let RunBenchmark (benchmarkType: string) =
+        match benchmarkType with
+        | "BRANCHES" | "B" ->
+            BenchmarkRunner.Run<GameBranchesBenchmarking>()
+            |> ignore
+        | "HEURISTICS" | "H" ->
+            BenchmarkRunner.Run<HeuristicsBenchmarking>()
+            |> ignore
+        | _ -> ()

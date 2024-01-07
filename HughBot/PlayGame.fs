@@ -50,7 +50,7 @@ let private getComputerMove (game: game) (file: StreamWriter): move =
         stopWatch.Stop()
         let move = Option.get oMove
         MoveParser.AlgebraicNotation.toString move game.gameState.board |> (printf "%s")
-        printfn "\nTime taken: %.2f" stopWatch.Elapsed.TotalSeconds
+        printfn $"\nTime taken: %.2f{stopWatch.Elapsed.TotalSeconds}"
         move
     with
     | ex ->
@@ -68,20 +68,25 @@ let private getOpponentMove (game: game) (opponent: Opponent) (file: StreamWrite
         getUserInputMoveFromNotation game.gameState moves
         |> Option.defaultWith (fun () -> getUserInputMoveFromList game.gameState.board moves)
 
-let private play (game: game) =
+let play (fenOption: string) (depth: int) =
     printfn "Let's play!"
-    let mutable game = game
+    let mutable game =
+        match fenOption with
+        | null ->
+            Game.Create.newGame ()
+        | fen ->
+            Game.Create.fromFen fen
     let opponent = getUserInputForOpponent ()
     let botColour = 
         match opponent with
         | Computer -> White
         | _ -> Console.ParseLine "Please select White or Black for me to play" Colour.tryParse 
     
-    let date = System.DateTime.Now.ToString("yyyyMMdd")
+    let date = DateTime.Now.ToString("yyyyMMdd")
     let fileName = 
         match opponent with
-        | Human name -> $"Hughbot({botColour |> Colour.toChar})vs({botColour |> Colour.opposite |> Colour.toChar}){name}"
-        | Computer -> $"SelfPlay"
+        | Human name -> $"HughBot({botColour |> Colour.toChar})vs({botColour |> Colour.opposite |> Colour.toChar}){name}"
+        | Computer -> "SelfPlay"
         | Test -> ""
     let path = $"../../../RecordedGames/{fileName}_{date}.log"
     let file = File.CreateText(path)
@@ -101,41 +106,24 @@ let private play (game: game) =
     file.Close()
 
     printfn("\n==========\nGame Moves\n==========")
-    printfn "%s" (Game.pgn game)
+    printfn $"%s{Game.pgn game}"
 
     printfn "\nGood game!"
 
     if opponent = Test then
         File.Delete path
 
-let newGame () =
-    Game.Create.newGame () 
-    |> play
-
-let playFromFen (fen : string) =
-    {
-        gameState = GameState.Create.fromFen fen
-        fens = Map[];
-        moves = []
-    }
-    |> play
-
-let evaluatePosition () =
-    let game = 
-        Console.ParseLine "Enter Fen of game to evaluate" (fun (userInputFen: string) -> 
-            try
-                userInputFen
-                |> Game.Create.fromFen
-                |> Some
-            with
-            | _ -> None
-        )
-    let stopWatch = System.Diagnostics.Stopwatch.StartNew()
-    Game.print game
-
-    printfn "\nCalculating move...\n"
-
-    let move, eval = MinMax.evaluation game
-    stopWatch.Stop()
-    printfn "Time taken: %.2f" stopWatch.Elapsed.TotalSeconds
-    printfn $"{move}\n{eval}"
+let evaluatePosition (fen: string) =
+    try
+        let game = Game.Create.fromFen fen
+        let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+        Game.print game
+        printfn "\nCalculating move...\n"
+        
+        let move, eval = MinMax.evaluation game
+        
+        stopWatch.Stop()
+        printfn $"Time taken: %.2f{stopWatch.Elapsed.TotalSeconds}"
+        printfn $"{move}\n{eval}"        
+    with
+    | _ -> ()
