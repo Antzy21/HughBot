@@ -109,10 +109,14 @@ let evaluatePosition (fen: string) (depth: int) =
         printfn "\nCalculating move...\n"
             
         let hughbotComputer = { depth = depth }
-        let move, eval = hughbotComputer.getMoveAndEval game
+        let moveOption, eval = hughbotComputer.getMoveAndEval game
         
         stopWatch.Stop()
         printfn $"Time taken: %.2f{stopWatch.Elapsed.TotalSeconds}"
-        printfn $"{move}\n{eval}"        
+        match moveOption with
+        | Some move ->
+            printfn $"{MoveParser.FullNotation.toString game.gameState.board move}\n{eval}"        
+        | None ->
+            printfn $"No Move\n{eval}"
     with
     | _ -> ()
