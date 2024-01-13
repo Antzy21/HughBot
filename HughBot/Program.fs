@@ -1,10 +1,7 @@
-﻿open System.Threading.Tasks
-open Chess
-open HughBot
+﻿open HughBot
 open HughBot.Benchmarking
 open System
 open System.CommandLine
-open System.CommandLine.Invocation
 
 [<EntryPoint>]
 let main argv =
