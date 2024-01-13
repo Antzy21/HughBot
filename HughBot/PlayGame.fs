@@ -99,14 +99,14 @@ let play (fenOption: string) (depth: int) (colourString: string) (opponentString
 
     printfn "\nGood game!"
 
-let evaluatePosition (fen: string) (depth: int) =
+let evaluatePosition (fen: string) (depth: int) (orderedEvaluation: bool) =
     try
         let game = Game.Create.fromFen fen
         let stopWatch = System.Diagnostics.Stopwatch.StartNew()
         Game.print game
         printfn "\nCalculating move...\n"
             
-        let hughbotComputer = { evaluationFunction = MinMax.evaluation depth false }   
+        let hughbotComputer = { evaluationFunction = MinMax.evaluation depth orderedEvaluation }   
         let moveOption, eval = hughbotComputer.evaluationFunction game
         
         stopWatch.Stop()
