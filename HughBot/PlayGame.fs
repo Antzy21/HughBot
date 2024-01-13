@@ -2,52 +2,7 @@
 
 open System
 open System.IO
-open FSharp.Extensions
 open Chess
-
-type Computer =
-    {
-        evaluationFunction: game -> move option * float;
-    }
-
-type PlayerType =
-    | Human
-    | Computer of Computer
-
-let private getUserInputMoveFromNotation (game: gameState) : move option =
-    Console.ParseLineWithBreakOption "Please enter move" (fun (notation: string) ->
-        MoveParser.tryParse game.playerTurn game.board notation
-        |> Result.toOption
-    )
-let private getUserInputMoveFromList (game: game) =
-    let moves = GameState.getMoves game.gameState
-    moves |> List.iteri (fun i m -> printfn $"({i}) {MoveParser.FullNotation.toString game.gameState.board m}")
-    Console.ParseLine "Please enter a valid move #" (fun (v: string) ->
-        Int.tryParse v
-        |> Option.bind (fun i ->
-            if i < 0 || i > moves.Length then
-                None
-            else
-                Some moves[i]
-        )
-    )
-
-type Player =
-    {name: string; playerType: PlayerType; colour: colour}
-    member this.getMove (game: game) : move =
-        let stopWatch = System.Diagnostics.Stopwatch.StartNew()
-        let move =
-            match this.playerType with
-            | Computer c -> c.evaluationFunction game |> fst |> Option.get
-            | Human ->
-                getUserInputMoveFromNotation game.gameState
-                |> Option.defaultWith (fun () ->
-                    getUserInputMoveFromList game
-                )
-        stopWatch.Stop()
-        MoveParser.AlgebraicNotation.toString move game.gameState.board |> (printf "%s")
-        printfn $"\nTime taken: %.2f{stopWatch.Elapsed.TotalSeconds}"
-        move
 
 let play (fenOption: string) (depth: int) (colourString: string) (opponentString: string) (orderedEvaluation: bool) =
     printfn "Let's play!"
@@ -96,7 +51,6 @@ let play (fenOption: string) (depth: int) (colourString: string) (opponentString
 
     printfn("\n==========\nGame Moves\n==========")
     printfn $"%s{Game.pgn game}"
-
     printfn "\nGood game!"
 
 let evaluatePosition (fen: string) (depth: int) (orderedEvaluation: bool) =
