@@ -3,7 +3,6 @@
 open BenchmarkDotNet.Attributes
 open Chess
 open HughBot
-open FSharp.Extensions
 open BenchmarkDotNet.Running
 
 [<MemoryDiagnoser>]

@@ -9,8 +9,12 @@ type GameTree =
 
 module GameTree =
 
-    let rec private calcAndMoveRec (getMovesFunc: gameState -> move list) (makeMovesFunc)
-        (depth: int) (finishWithMoves: bool) (game: game) =
+    let rec private calcAndMoveRec
+        (getMovesFunc: gameState -> move list)
+        (makeMovesFunc: move -> game -> game)
+        (depth: int)
+        (finishWithMoves: bool)
+        (game: game) =
         if depth <= 0 then
             if finishWithMoves then
                 Moves (getMovesFunc game.gameState)

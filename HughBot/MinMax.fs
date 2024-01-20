@@ -13,7 +13,7 @@ let private getMovesAndNewGameStates (game: game) : (move * game) list =
 
 /// Orders the list of moves based on evaluation desired by player of move
 let private orderMovesAndGsByStaticEval (isMaxing: bool) : (move * game) list -> (move * game) list =
-    fun (move, game) -> Heuristics.advancedEval game
+    fun (_, game) -> Heuristics.advancedEval game
     |>
     if isMaxing then
         List.sortByDescending
@@ -27,7 +27,7 @@ let private getNodesFromParent (orderByEval: bool) (game: game) =
         else
             id
 
-let private evaluationFunction move game = Heuristics.advancedEval game
+let private evaluationFunction _ game = Heuristics.advancedEval game
 
 let private chessMinMax orderByEval = Algorithms.minMaxAbPruning (getNodesFromParent orderByEval) evaluationFunction
 

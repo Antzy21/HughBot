@@ -8,6 +8,8 @@
   <ItemGroup>
     <Compile Include="Heuristics.fs" />
     <Compile Include="MinMax.fs" />
+    <Compile Include="Computer.fs" />
+    <Compile Include="Player.fs" />
     <Compile Include="PlayGame.fs" />
   </ItemGroup>
 

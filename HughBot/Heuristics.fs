@@ -11,9 +11,9 @@ let private pieceFlexibilityValue (board: board) (coords: coordinates) : float =
     |> List.length |> float
 
 let private centralityBonusOnLine (i: int) : float =
-    3.5-(abs((float i) - 3.5))
+    3.5- abs((float i) - 3.5)
 
-let private centralityBonus (board: board) (c: coordinates) : float =
+let private centralityBonus (_: board) (c: coordinates) : float =
     let fileBonus = 
         Coordinates.getFile c
         |> centralityBonusOnLine 
@@ -53,7 +53,7 @@ let private calculateFlexValue (piece: piece) (board: board) (coords: coordinate
         | Pawn -> pawnAdvanceValue piece coords |> (*) 0.005 |> Some
         | King -> None
 
-let private basicPieceValueEvaluationOfSquare (board: board) (coords: coordinates) (sqr: square) : float option =
+let private basicPieceValueEvaluationOfSquare (_: board) (_: coordinates) (sqr: square) : float option =
     match sqr with
     | None -> None
     | Some piece ->
@@ -91,18 +91,18 @@ let private gameOverEvaluation (turnsUntilGameOver: int) (game: game) : float =
 
 // The general evaluation wrapper function.
 // Just needs to know how to evaluate each individual square.
-let private staticEvaluationOfGameState (squareEvalFunction: board -> coordinates -> square -> float option) (game: game) : float =
+let private staticEvaluationOfGameState (_: board -> coordinates -> square -> float option) (game: game) : float =
     if Game.isGameOver game then
         gameOverEvaluation 0 game
     else
         game.gameState.board
-        |> Board.foldjiback (fun coords boardValue sqr ->
+        |> Board.fold (fun coords boardValue sqr ->
             match advancedEvaluationOfSquare game.gameState.board coords sqr with
             | None -> boardValue
             | Some value -> boardValue + value
         ) 0
 
-let getComputations (squareEvalFunction) (board) (sqrList) =
+let private getComputations squareEvalFunction board sqrList =
     [
         for coords in sqrList do
             async {

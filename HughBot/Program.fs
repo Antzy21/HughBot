@@ -1,10 +1,7 @@
-﻿open System.Threading.Tasks
-open Chess
-open HughBot
+﻿open HughBot
 open HughBot.Benchmarking
 open System
 open System.CommandLine
-open System.CommandLine.Invocation
 
 [<EntryPoint>]
 let main argv =
@@ -33,7 +30,7 @@ let main argv =
     let fenArgument = Argument<string>("fenArg", "The chess game state, represented as a Fen")
     evaluateCommand.AddArgument(fenArgument)
     evaluateCommand.AddOption(depthOption)
-    evaluateCommand.SetHandler(PlayGame.evaluatePosition, fenArgument, depthOption)
+    evaluateCommand.SetHandler(PlayGame.evaluatePosition, fenArgument, depthOption, orderedEvaluationOption)
 
     let rootCommand = RootCommand "HughBot"
     rootCommand.AddOption(depthOption)
